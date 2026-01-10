@@ -1,0 +1,240 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ordinazioni Felpe e Magliette</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>🎓 Ordinazioni Felpe e Magliette</h1>
+            <p class="subtitle">Scegli il tuo prodotto e completa l'ordine</p>
+        </header>
+
+        <!-- Catalogo Prodotti -->
+        <div id="catalogo">
+            <h2 class="section-title">👕 Felpe</h2>
+            <div id="felpe-grid" class="products-grid"></div>
+            
+            <h2 class="section-title">👚 Magliette per Indirizzo</h2>
+            <div id="magliette-grid" class="products-grid"></div>
+        </div>
+
+        <!-- Modal Ordine -->
+        <div id="orderModal" class="modal hidden">
+            <div class="modal-content">
+                <span class="close" onclick="closeModal()">&times;</span>
+                
+                <div id="modalProduct" class="modal-product"></div>
+                
+                <form id="orderForm">
+                    <h3>Completa il tuo ordine</h3>
+                    
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="nome">Nome *</label>
+                            <input type="text" id="nome" required placeholder="Es. Mario">
+                        </div>
+                        <div class="form-group">
+                            <label for="cognome">Cognome *</label>
+                            <input type="text" id="cognome" required placeholder="Es. Rossi">
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="classe">Classe *</label>
+                        <input type="text" id="classe" required placeholder="Es. 3A Informatica">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="taglia">Taglia *</label>
+                        <select id="taglia" required>
+                            <option value="">Seleziona taglia...</option>
+                        </select>
+                    </div>
+
+                    <div class="order-summary">
+                        <div class="summary-row">
+                            <span>Totale da pagare:</span>
+                            <span id="totalPrice" class="price">€0.00</span>
+                        </div>
+                    </div>
+
+                    <button type="submit" class="btn-submit">
+                        Conferma Ordine
+                    </button>
+                </form>
+
+                <div id="message" class="message hidden"></div>
+            </div>
+        </div>
+
+        <footer>
+            <p>Sistema gestito dal Rappresentante di Istituto</p>
+            <a href="admin.html" class="admin-link">Area Amministratore</a>
+        </footer>
+    </div>
+
+    <script>
+        let catalogo = null;
+        let prodottoSelezionato = null;
+
+        // Carica catalogo all'avvio
+        window.addEventListener('DOMContentLoaded', loadCatalogo);
+
+        async function loadCatalogo() {
+            try {
+                const response = await fetch('/api/catalogo');
+                catalogo = await response.json();
+                
+                renderFelpe(catalogo.felpe);
+                renderMagliette(catalogo.magliette);
+            } catch (error) {
+                console.error('Errore caricamento catalogo:', error);
+            }
+        }
+
+        function renderFelpe(felpe) {
+            const grid = document.getElementById('felpe-grid');
+            grid.innerHTML = '';
+            
+            felpe.forEach(felpa => {
+                const card = createProductCard(felpa, 'felpa');
+                grid.appendChild(card);
+            });
+        }
+
+        function renderMagliette(magliette) {
+            const grid = document.getElementById('magliette-grid');
+            grid.innerHTML = '';
+            
+            magliette.forEach(maglietta => {
+                const card = createProductCard(maglietta, 'maglietta');
+                grid.appendChild(card);
+            });
+        }
+
+        function createProductCard(prodotto, tipo) {
+            const card = document.createElement('div');
+            card.className = 'product-card';
+            
+            const descrizione = tipo === 'felpa' 
+                ? `Colore ${prodotto.colore} con scritta ${prodotto.scritta}`
+                : `Indirizzo ${prodotto.indirizzo}`;
+            
+            card.innerHTML = `
+                <div class="product-image">
+                    <img src="${prodotto.immagine}" alt="${prodotto.nome}" onerror="this.src='/images/placeholder.jpg'">
+                </div>
+                <div class="product-info">
+                    <h3 class="product-name">${prodotto.nome}</h3>
+                    <p class="product-description">${descrizione}</p>
+                    <div class="product-footer">
+                        <span class="product-price">€${prodotto.prezzo.toFixed(2)}</span>
+                        <button class="btn-order" onclick='openModal(${JSON.stringify(prodotto)})'>
+                            Ordina
+                        </button>
+                    </div>
+                </div>
+            `;
+            
+            return card;
+        }
+
+        function openModal(prodotto) {
+            prodottoSelezionato = prodotto;
+            
+            // Mostra dettaglio prodotto
+            const modalProduct = document.getElementById('modalProduct');
+            modalProduct.innerHTML = `
+                <img src="${prodotto.immagine}" alt="${prodotto.nome}" onerror="this.src='/images/placeholder.jpg'">
+                <div>
+                    <h2>${prodotto.nome}</h2>
+                    <p class="modal-price">€${prodotto.prezzo.toFixed(2)}</p>
+                </div>
+            `;
+            
+            // Popola taglie
+            const tagliaSelect = document.getElementById('taglia');
+            tagliaSelect.innerHTML = '<option value="">Seleziona taglia...</option>';
+            prodotto.taglie.forEach(taglia => {
+                const option = document.createElement('option');
+                option.value = taglia;
+                option.textContent = taglia;
+                tagliaSelect.appendChild(option);
+            });
+            
+            // Mostra prezzo
+            document.getElementById('totalPrice').textContent = `€${prodotto.prezzo.toFixed(2)}`;
+            
+            // Mostra modal
+            document.getElementById('orderModal').classList.remove('hidden');
+        }
+
+        function closeModal() {
+            document.getElementById('orderModal').classList.add('hidden');
+            document.getElementById('orderForm').reset();
+            document.getElementById('message').classList.add('hidden');
+            prodottoSelezionato = null;
+        }
+
+        // Gestione invio ordine
+        document.getElementById('orderForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            if (!prodottoSelezionato) return;
+            
+            const formData = {
+                nome: document.getElementById('nome').value,
+                cognome: document.getElementById('cognome').value,
+                classe: document.getElementById('classe').value,
+                prodottoId: prodottoSelezionato.id,
+                taglia: document.getElementById('taglia').value
+            };
+            
+            try {
+                const response = await fetch('/api/orders', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(formData)
+                });
+                
+                const result = await response.json();
+                
+                if (result.success) {
+                    showMessage(`✅ Ordine confermato! Totale: €${result.totale.toFixed(2)}`, 'success');
+                    document.getElementById('orderForm').reset();
+                    
+                    setTimeout(() => {
+                        closeModal();
+                    }, 2000);
+                } else {
+                    showMessage('❌ ' + result.message, 'error');
+                }
+            } catch (error) {
+                showMessage('❌ Errore di connessione al server', 'error');
+                console.error('Errore:', error);
+            }
+        });
+
+        function showMessage(text, type) {
+            const messageDiv = document.getElementById('message');
+            messageDiv.textContent = text;
+            messageDiv.className = `message ${type}`;
+            messageDiv.classList.remove('hidden');
+        }
+
+        // Chiudi modal cliccando fuori
+        window.onclick = function(event) {
+            const modal = document.getElementById('orderModal');
+            if (event.target === modal) {
+                closeModal();
+            }
+        }
+    </script>
+</body>
+</html>

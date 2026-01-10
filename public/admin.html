@@ -1,0 +1,378 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin - Gestione Ordinazioni</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <!-- Schermata di Login -->
+    <div id="loginScreen" class="login-screen">
+        <div class="login-container">
+            <div class="login-header">
+                <h1>🔐 Accesso Amministratore</h1>
+                <p>Inserisci la password per accedere</p>
+            </div>
+            <form id="loginForm" class="login-form">
+                <div class="form-group">
+                    <label for="password">Password</label>
+                    <input type="password" id="password" name="password" placeholder="Inserisci password" required autofocus>
+                </div>
+                <button type="submit" class="btn-submit">
+                    🔓 Accedi
+                </button>
+                <div id="loginError" class="login-error hidden"></div>
+            </form>
+            <div class="login-footer">
+                <a href="index.html" class="admin-link">← Torna alla pagina ordinazioni</a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Pannello Admin -->
+    <div id="adminPanel" class="container hidden">
+        <header>
+            <h1>🔧 Pannello Amministratore</h1>
+            <p class="subtitle">Visualizza e gestisci tutte le ordinazioni</p>
+            <button onclick="logout()" class="btn-logout">🚪 Esci</button>
+        </header>
+
+        <!-- Statistiche Principali -->
+        <div class="stats-grid">
+            <div class="stat-card">
+                <div class="stat-number" id="totalOrders">0</div>
+                <div class="stat-label">Ordini Totali</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-number" id="totalFelpe">0</div>
+                <div class="stat-label">Felpe</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-number" id="totalMagliette">0</div>
+                <div class="stat-label">Magliette</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-number" id="incassoTotale">€0.00</div>
+                <div class="stat-label">Incasso Totale</div>
+            </div>
+        </div>
+
+        <!-- Statistiche Dettagliate per Prodotto -->
+        <div class="card">
+            <h3>📊 Dettaglio per Prodotto</h3>
+            <div id="productStats"></div>
+        </div>
+
+        <!-- Azioni -->
+        <div class="card">
+            <div class="admin-actions">
+                <button onclick="loadOrders()" class="btn-action btn-primary">
+                    🔄 Ricarica Ordini
+                </button>
+                <button onclick="exportCSV()" class="btn-action btn-secondary">
+                    📥 Esporta CSV
+                </button>
+                <button onclick="clearFilters()" class="btn-action">
+                    🗑️ Pulisci Filtri
+                </button>
+            </div>
+
+            <!-- Filtri -->
+            <div class="filters">
+                <input type="text" id="searchInput" placeholder="🔍 Cerca per nome, cognome, classe..." class="search-input">
+                <select id="filterTipo" class="filter-select">
+                    <option value="">Tutti i tipi</option>
+                    <option value="felpa">Solo Felpe</option>
+                    <option value="maglietta">Solo Magliette</option>
+                </select>
+                <select id="filterTaglia" class="filter-select">
+                    <option value="">Tutte le taglie</option>
+                    <option value="S">S</option>
+                    <option value="M">M</option>
+                    <option value="L">L</option>
+                    <option value="XL">XL</option>
+                    <option value="XXL">XXL</option>
+                </select>
+            </div>
+        </div>
+
+        <!-- Tabella Ordini -->
+        <div class="card">
+            <div id="loadingMessage" class="loading">Caricamento ordini...</div>
+            <div id="noOrders" class="no-orders hidden">Nessun ordine presente</div>
+            
+            <div class="table-container">
+                <table id="ordersTable" class="orders-table hidden">
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Nome</th>
+                            <th>Cognome</th>
+                            <th>Classe</th>
+                            <th>Prodotto</th>
+                            <th>Taglia</th>
+                            <th>Prezzo</th>
+                            <th>Data</th>
+                            <th>Azioni</th>
+                        </tr>
+                    </thead>
+                    <tbody id="ordersBody"></tbody>
+                </table>
+            </div>
+        </div>
+
+        <footer>
+            <a href="index.html" class="admin-link">← Torna alla pagina ordinazioni</a>
+        </footer>
+    </div>
+
+    <script>
+        const loginScreen = document.getElementById('loginScreen');
+        const adminPanel = document.getElementById('adminPanel');
+        const loginForm = document.getElementById('loginForm');
+        const loginError = document.getElementById('loginError');
+        const passwordInput = document.getElementById('password');
+        
+        let allOrders = [];
+        let authToken = sessionStorage.getItem('adminToken');
+        
+        // Controlla autenticazione all'avvio
+        if (authToken) {
+            verifyToken();
+        }
+        
+        async function verifyToken() {
+            try {
+                const response = await fetch('/api/orders', {
+                    headers: { 'Authorization': authToken }
+                });
+                
+                if (response.ok) {
+                    showAdminPanel();
+                } else {
+                    sessionStorage.removeItem('adminToken');
+                    authToken = null;
+                }
+            } catch (error) {
+                sessionStorage.removeItem('adminToken');
+                authToken = null;
+            }
+        }
+        
+        // Gestione login
+        loginForm.addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            try {
+                const response = await fetch('/api/admin/login', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ password: passwordInput.value })
+                });
+                
+                const result = await response.json();
+                
+                if (result.success) {
+                    authToken = 'Bearer ' + result.token;
+                    sessionStorage.setItem('adminToken', authToken);
+                    showAdminPanel();
+                } else {
+                    loginError.textContent = '❌ Password errata';
+                    loginError.classList.remove('hidden');
+                    passwordInput.value = '';
+                    setTimeout(() => loginError.classList.add('hidden'), 3000);
+                }
+            } catch (error) {
+                loginError.textContent = '❌ Errore di connessione';
+                loginError.classList.remove('hidden');
+            }
+        });
+        
+        function showAdminPanel() {
+            loginScreen.classList.add('hidden');
+            adminPanel.classList.remove('hidden');
+            loadOrders();
+            loadStats();
+        }
+        
+        function logout() {
+            if (confirm('Vuoi davvero uscire?')) {
+                sessionStorage.removeItem('adminToken');
+                location.reload();
+            }
+        }
+        
+        async function loadOrders() {
+            const loadingMessage = document.getElementById('loadingMessage');
+            const noOrders = document.getElementById('noOrders');
+            const ordersTable = document.getElementById('ordersTable');
+            
+            loadingMessage.classList.remove('hidden');
+            noOrders.classList.add('hidden');
+            ordersTable.classList.add('hidden');
+            
+            try {
+                const response = await fetch('/api/orders', {
+                    headers: { 'Authorization': authToken }
+                });
+                
+                allOrders = await response.json();
+                
+                loadingMessage.classList.add('hidden');
+                
+                if (allOrders.length === 0) {
+                    noOrders.classList.remove('hidden');
+                } else {
+                    ordersTable.classList.remove('hidden');
+                    updateBasicStats();
+                    filterOrders();
+                    initFilters();
+                }
+            } catch (error) {
+                loadingMessage.textContent = '❌ Errore nel caricamento';
+            }
+        }
+        
+        async function loadStats() {
+            try {
+                const response = await fetch('/api/admin/stats', {
+                    headers: { 'Authorization': authToken }
+                });
+                
+                const stats = await response.json();
+                displayDetailedStats(stats);
+            } catch (error) {
+                console.error('Errore caricamento statistiche:', error);
+            }
+        }
+        
+        function displayDetailedStats(stats) {
+            const container = document.getElementById('productStats');
+            let html = '<div class="stats-grid">';
+            
+            for (const [prodotto, data] of Object.entries(stats.perProdotto)) {
+                html += `
+                    <div class="stat-card">
+                        <div class="stat-number">${data.quantita}</div>
+                        <div class="stat-label">${prodotto}</div>
+                        <div class="stat-price">€${data.incasso.toFixed(2)}</div>
+                    </div>
+                `;
+            }
+            
+            html += '</div>';
+            container.innerHTML = html;
+        }
+        
+        function updateBasicStats() {
+            document.getElementById('totalOrders').textContent = allOrders.length;
+            document.getElementById('totalFelpe').textContent = allOrders.filter(o => o.tipo === 'felpa').length;
+            document.getElementById('totalMagliette').textContent = allOrders.filter(o => o.tipo === 'maglietta').length;
+            
+            const totale = allOrders.reduce((sum, o) => sum + o.prezzo, 0);
+            document.getElementById('incassoTotale').textContent = `€${totale.toFixed(2)}`;
+        }
+        
+        function initFilters() {
+            document.getElementById('searchInput').addEventListener('input', filterOrders);
+            document.getElementById('filterTipo').addEventListener('change', filterOrders);
+            document.getElementById('filterTaglia').addEventListener('change', filterOrders);
+        }
+        
+        function filterOrders() {
+            const searchTerm = document.getElementById('searchInput').value.toLowerCase();
+            const filterTipo = document.getElementById('filterTipo').value;
+            const filterTaglia = document.getElementById('filterTaglia').value;
+            
+            const filtered = allOrders.filter(order => {
+                const matchSearch = !searchTerm || 
+                    order.nome.toLowerCase().includes(searchTerm) ||
+                    order.cognome.toLowerCase().includes(searchTerm) ||
+                    order.classe.toLowerCase().includes(searchTerm);
+                const matchTipo = !filterTipo || order.tipo === filterTipo;
+                const matchTaglia = !filterTaglia || order.taglia === filterTaglia;
+                
+                return matchSearch && matchTipo && matchTaglia;
+            });
+            
+            displayOrders(filtered);
+        }
+        
+        function displayOrders(orders) {
+            const tbody = document.getElementById('ordersBody');
+            tbody.innerHTML = '';
+            
+            orders.forEach(order => {
+                const tr = document.createElement('tr');
+                const data = new Date(order.data).toLocaleString('it-IT');
+                
+                tr.innerHTML = `
+                    <td>${order.id}</td>
+                    <td>${order.nome}</td>
+                    <td>${order.cognome}</td>
+                    <td>${order.classe}</td>
+                    <td>${order.prodotto}</td>
+                    <td><span class="badge">${order.taglia}</span></td>
+                    <td>€${order.prezzo.toFixed(2)}</td>
+                    <td>${data}</td>
+                    <td>
+                        <button onclick="deleteOrder(${order.id})" class="btn-delete" title="Elimina">
+                            🗑️
+                        </button>
+                    </td>
+                `;
+                tbody.appendChild(tr);
+            });
+        }
+        
+        async function deleteOrder(orderId) {
+            if (!confirm('Sei sicuro di voler eliminare questo ordine?')) return;
+            
+            try {
+                const response = await fetch(`/api/orders/${orderId}`, {
+                    method: 'DELETE',
+                    headers: { 'Authorization': authToken }
+                });
+                
+                const result = await response.json();
+                
+                if (result.success) {
+                    await loadOrders();
+                    await loadStats();
+                    alert('✅ Ordine eliminato');
+                } else {
+                    alert('❌ ' + result.message);
+                }
+            } catch (error) {
+                alert('❌ Errore nell\'eliminazione');
+            }
+        }
+        
+        function exportCSV() {
+            fetch('/api/export/csv', {
+                headers: { 'Authorization': authToken }
+            })
+            .then(response => response.blob())
+            .then(blob => {
+                const url = window.URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = 'ordinazioni.csv';
+                document.body.appendChild(a);
+                a.click();
+                window.URL.revokeObjectURL(url);
+                document.body.removeChild(a);
+            })
+            .catch(error => alert('❌ Errore nell\'esportazione'));
+        }
+        
+        function clearFilters() {
+            document.getElementById('searchInput').value = '';
+            document.getElementById('filterTipo').value = '';
+            document.getElementById('filterTaglia').value = '';
+            filterOrders();
+        }
+    </script>
+</body>
+</html>
