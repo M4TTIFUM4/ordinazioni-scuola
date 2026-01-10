@@ -21,17 +21,17 @@ const PRODOTTI = {
       nome: 'Felpa Blu con Scritta Bianca',
       colore: 'blu',
       scritta: 'bianca',
-      prezzo: 25.00,
-      immagine: '/images/felpa-blu-bianca.png',
+      prezzo: 26.00,
+      immagine: 'felpa-blu-bianca.png',
       taglie: ['S', 'M', 'L', 'XL', 'XXL']
     },
     {
-      id: 'felpa-grigia-nera',
+      id: 'felpa-bianca-nera',
       nome: 'Felpa Bianca con Scritta Nera',
       colore: 'grigia',
       scritta: 'nera',
-      prezzo: 25.00,
-      immagine: '/images/felpa-bianca-nera.png',
+      prezzo: 26.00,
+      immagine: 'felpa-bianca-nera.png',
       taglie: ['S', 'M', 'L', 'XL', 'XXL']
     },
     {
@@ -39,8 +39,8 @@ const PRODOTTI = {
       nome: 'Felpa Grigia con Scritta Blu',
       colore: 'grigia',
       scritta: 'blu',
-      prezzo: 25.00,
-      immagine: '/images/felpa-grigia-blu.png',
+      prezzo: 26.00,
+      immagine: 'felpa-grigia-blu.png',
       taglie: ['S', 'M', 'L', 'XL', 'XXL']
     }
   ],
@@ -50,7 +50,7 @@ const PRODOTTI = {
       nome: 'Maglietta Meccanico',
       indirizzo: 'Meccanico',
       prezzo: 15.00,
-      immagine: '/images/maglietta-meccanico.png',
+      immagine: 'maglietta-meccanico.png',
       taglie: ['S', 'M', 'L', 'XL', 'XXL']
     },
     {
@@ -58,7 +58,7 @@ const PRODOTTI = {
       nome: 'Maglietta Informatica',
       indirizzo: 'Informatica',
       prezzo: 15.00,
-      immagine: '/images/maglietta-informatico.png',
+      immagine: 'maglietta-informatico.png',
       taglie: ['S', 'M', 'L', 'XL', 'XXL']
     },
     {
@@ -66,7 +66,7 @@ const PRODOTTI = {
       nome: 'Maglietta Elettronico',
       indirizzo: 'Elettronico',
       prezzo: 15.00,
-      immagine: '/images/maglietta-elettronico.png',
+      immagine: 'maglietta-elettronico.png',
       taglie: ['S', 'M', 'L', 'XL', 'XXL']
     },
     {
@@ -74,8 +74,26 @@ const PRODOTTI = {
       nome: 'Maglietta Chimico',
       indirizzo: 'Chimico',
       prezzo: 15.00,
-      immagine: '/images/maglietta-chimico.png',
+      immagine: 'maglietta-chimico.png',
       taglie: ['S', 'M', 'L', 'XL', 'XXL']
+    }
+  ],
+  accessori: [
+    {
+      id: 'borraccia',
+      nome: 'Borraccia Scuola',
+      descrizione: 'Borraccia termica personalizzata',
+      prezzo: 10.00,
+      immagine: 'borraccia.png',
+      taglie: ['Unica']
+    },
+    {
+      id: 'cavatappi',
+      nome: 'Cavatappi Scuola',
+      descrizione: 'Cavatappi personalizzato',
+      prezzo: 5.00,
+      immagine: 'cavatappi.png',
+      taglie: ['Unica']
     }
   ]
 };
@@ -157,6 +175,13 @@ app.post('/api/orders', (req, res) => {
         if (m.id === prodottoId) {
             prodotto = m;
             tipo = 'maglietta';
+        }
+    });
+    
+    PRODOTTI.accessori.forEach(a => {
+        if (a.id === prodottoId) {
+            prodotto = a;
+            tipo = 'accessorio';
         }
     });
     

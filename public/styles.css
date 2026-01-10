@@ -356,6 +356,61 @@ footer {
 }
 
 /* ===========================================
+   PULSANTE GUIDA TAGLIE
+   =========================================== */
+
+.btn-size-guide {
+    background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+    color: white;
+    border: none;
+    padding: 15px 30px;
+    border-radius: 10px;
+    font-size: 1.1rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s;
+    box-shadow: 0 5px 15px rgba(16, 185, 129, 0.3);
+}
+
+.btn-size-guide:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 8px 20px rgba(16, 185, 129, 0.4);
+}
+
+/* ===========================================
+   ANTEPRIMA DAVANTI/DIETRO
+   =========================================== */
+
+.preview-toggle {
+    text-align: center;
+    margin: 20px 0;
+    padding: 20px;
+    background: #f8f9fa;
+    border-radius: 10px;
+}
+
+.btn-preview {
+    background: white;
+    color: #667eea;
+    border: 2px solid #667eea;
+    padding: 10px 20px;
+    border-radius: 8px;
+    margin: 0 5px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s;
+}
+
+.btn-preview.active {
+    background: #667eea;
+    color: white;
+}
+
+.btn-preview:hover {
+    transform: translateY(-2px);
+}
+
+/* ===========================================
    ADMIN PAGES (mantengo gli stili precedenti)
    =========================================== */
 

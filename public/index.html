@@ -20,6 +20,27 @@
             
             <h2 class="section-title">👚 Magliette per Indirizzo</h2>
             <div id="magliette-grid" class="products-grid"></div>
+            
+            <h2 class="section-title">🎒 Accessori</h2>
+            <div id="accessori-grid" class="products-grid"></div>
+        </div>
+
+        <!-- Pulsante Guida Taglie -->
+        <div style="text-align: center; margin: 30px 0;">
+            <button onclick="openSizeGuide()" class="btn-size-guide">
+                📏 Guida alle Taglie
+            </button>
+        </div>
+
+        <!-- Modal Guida Taglie -->
+        <div id="sizeGuideModal" class="modal hidden">
+            <div class="modal-content" style="max-width: 800px;">
+                <span class="close" onclick="closeSizeGuide()">&times;</span>
+                <h2>📏 Guida alle Taglie</h2>
+                <div style="text-align: center; margin-top: 20px;">
+                    <img src="/images/guida-taglie.png" alt="Guida Taglie" style="max-width: 100%; height: auto; border-radius: 10px;" onerror="this.src='https://via.placeholder.com/800x600/667eea/ffffff?text=Guida+Taglie'">
+                </div>
+            </div>
         </div>
 
         <!-- Modal Ordine -->
@@ -28,6 +49,13 @@
                 <span class="close" onclick="closeModal()">&times;</span>
                 
                 <div id="modalProduct" class="modal-product"></div>
+                
+                <!-- Anteprima Davanti/Dietro per Magliette -->
+                <div id="previewToggle" class="preview-toggle hidden">
+                    <button class="btn-preview active" onclick="showPreview('fronte')">Davanti</button>
+                    <button class="btn-preview" onclick="showPreview('retro')">Dietro</button>
+                    <img id="previewImage" src="" alt="Anteprima" style="width: 100%; max-width: 300px; margin: 20px auto; display: block; border-radius: 10px;">
+                </div>
                 
                 <form id="orderForm">
                     <h3>Completa il tuo ordine</h3>
@@ -91,6 +119,7 @@
                 
                 renderFelpe(catalogo.felpe);
                 renderMagliette(catalogo.magliette);
+                renderAccessori(catalogo.accessori);
             } catch (error) {
                 console.error('Errore caricamento catalogo:', error);
             }
@@ -116,13 +145,25 @@
             });
         }
 
+        function renderAccessori(accessori) {
+            const grid = document.getElementById('accessori-grid');
+            grid.innerHTML = '';
+            
+            accessori.forEach(accessorio => {
+                const card = createProductCard(accessorio, 'accessorio');
+                grid.appendChild(card);
+            });
+        }
+
         function createProductCard(prodotto, tipo) {
             const card = document.createElement('div');
             card.className = 'product-card';
             
             const descrizione = tipo === 'felpa' 
                 ? `Colore ${prodotto.colore} con scritta ${prodotto.scritta}`
-                : `Indirizzo ${prodotto.indirizzo}`;
+                : tipo === 'maglietta'
+                ? `Indirizzo ${prodotto.indirizzo}`
+                : prodotto.descrizione;
             
             card.innerHTML = `
                 <div class="product-image">
@@ -149,12 +190,26 @@
             // Mostra dettaglio prodotto
             const modalProduct = document.getElementById('modalProduct');
             modalProduct.innerHTML = `
-                <img src="${prodotto.immagine}" alt="${prodotto.nome}" onerror="this.src='/images/placeholder.jpg'">
+                <img src="${prodotto.immagine}" alt="${prodotto.nome}" onerror="this.src='https://via.placeholder.com/500x500/667eea/ffffff?text=Prodotto'">
                 <div>
                     <h2>${prodotto.nome}</h2>
                     <p class="modal-price">€${prodotto.prezzo.toFixed(2)}</p>
                 </div>
             `;
+            
+            // Mostra anteprima davanti/dietro per magliette
+            const previewToggle = document.getElementById('previewToggle');
+            const previewImage = document.getElementById('previewImage');
+            
+            if (prodotto.id && prodotto.id.startsWith('maglietta-')) {
+                previewToggle.classList.remove('hidden');
+                previewImage.src = '/images/davanti.png';
+                // Reset pulsanti
+                document.querySelectorAll('.btn-preview').forEach(btn => btn.classList.remove('active'));
+                document.querySelector('.btn-preview').classList.add('active');
+            } else {
+                previewToggle.classList.add('hidden');
+            }
             
             // Popola taglie
             const tagliaSelect = document.getElementById('taglia');
@@ -228,11 +283,39 @@
             messageDiv.classList.remove('hidden');
         }
 
+        // Funzioni Guida Taglie
+        function openSizeGuide() {
+            document.getElementById('sizeGuideModal').classList.remove('hidden');
+        }
+
+        function closeSizeGuide() {
+            document.getElementById('sizeGuideModal').classList.add('hidden');
+        }
+
+        // Funzione Anteprima Davanti/Dietro
+        function showPreview(lato) {
+            const previewImage = document.getElementById('previewImage');
+            
+            if (lato === 'fronte') {
+                previewImage.src = '/images/davanti.png';
+            } else {
+                previewImage.src = prodottoSelezionato.immagine;
+            }
+            
+            // Aggiorna pulsanti attivi
+            document.querySelectorAll('.btn-preview').forEach(btn => btn.classList.remove('active'));
+            event.target.classList.add('active');
+        }
+
         // Chiudi modal cliccando fuori
         window.onclick = function(event) {
             const modal = document.getElementById('orderModal');
+            const sizeModal = document.getElementById('sizeGuideModal');
             if (event.target === modal) {
                 closeModal();
+            }
+            if (event.target === sizeModal) {
+                closeSizeGuide();
             }
         }
     </script>
