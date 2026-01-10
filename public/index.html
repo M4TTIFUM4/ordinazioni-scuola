@@ -43,6 +43,18 @@
             </div>
         </div>
 
+        <!-- Lightbox per Immagini/Video a Schermo Intero -->
+        <div id="lightbox" class="lightbox hidden" onclick="closeLightbox()">
+            <span class="lightbox-close">&times;</span>
+            <div class="lightbox-content" onclick="event.stopPropagation()">
+                <img id="lightboxImage" class="lightbox-media" style="display: none;">
+                <video id="lightboxVideo" class="lightbox-media" controls style="display: none;">
+                    <source id="lightboxVideoSource" type="video/mp4">
+                </video>
+            </div>
+            <div class="lightbox-caption" id="lightboxCaption"></div>
+        </div>
+
         <!-- Modal Ordine -->
         <div id="orderModal" class="modal hidden">
             <div class="modal-content">
@@ -165,9 +177,22 @@
                 ? `Indirizzo ${prodotto.indirizzo}`
                 : prodotto.descrizione;
             
+            // Gestione video o immagine
+            let mediaHTML = '';
+            if (prodotto.hasVideo) {
+                mediaHTML = `
+                    <video autoplay loop muted playsinline onclick="openLightbox('${prodotto.video}', '${prodotto.nome}', true)" style="cursor: pointer;">
+                        <source src="${prodotto.video}" type="video/mp4">
+                        <img src="${prodotto.immagine}" alt="${prodotto.nome}">
+                    </video>
+                `;
+            } else {
+                mediaHTML = `<img src="${prodotto.immagine}" alt="${prodotto.nome}" onclick="openLightbox('${prodotto.immagine}', '${prodotto.nome}', false)" style="cursor: pointer;" onerror="this.src='https://via.placeholder.com/500x500/667eea/ffffff?text=Prodotto'">`;
+            }
+            
             card.innerHTML = `
                 <div class="product-image">
-                    <img src="${prodotto.immagine}" alt="${prodotto.nome}" onerror="this.src='/images/placeholder.jpg'">
+                    ${mediaHTML}
                 </div>
                 <div class="product-info">
                     <h3 class="product-name">${prodotto.nome}</h3>
@@ -187,10 +212,22 @@
         function openModal(prodotto) {
             prodottoSelezionato = prodotto;
             
-            // Mostra dettaglio prodotto
+            // Mostra dettaglio prodotto con video o immagine
             const modalProduct = document.getElementById('modalProduct');
+            
+            let mediaHTML = '';
+            if (prodotto.hasVideo) {
+                mediaHTML = `
+                    <video autoplay loop muted playsinline controls onclick="openLightbox('${prodotto.video}', '${prodotto.nome}', true)" style="width: 120px; height: 120px; object-fit: cover; border-radius: 10px; cursor: pointer;">
+                        <source src="${prodotto.video}" type="video/mp4">
+                    </video>
+                `;
+            } else {
+                mediaHTML = `<img src="${prodotto.immagine}" alt="${prodotto.nome}" onclick="openLightbox('${prodotto.immagine}', '${prodotto.nome}', false)" style="cursor: pointer;" onerror="this.src='https://via.placeholder.com/500x500/667eea/ffffff?text=Prodotto'">`;
+            }
+            
             modalProduct.innerHTML = `
-                <img src="${prodotto.immagine}" alt="${prodotto.nome}" onerror="this.src='https://via.placeholder.com/500x500/667eea/ffffff?text=Prodotto'">
+                ${mediaHTML}
                 <div>
                     <h2>${prodotto.nome}</h2>
                     <p class="modal-price">€${prodotto.prezzo.toFixed(2)}</p>
@@ -306,6 +343,52 @@
             document.querySelectorAll('.btn-preview').forEach(btn => btn.classList.remove('active'));
             event.target.classList.add('active');
         }
+
+        // Funzioni Lightbox (Visualizzazione a Schermo Intero)
+        function openLightbox(src, caption, isVideo) {
+            const lightbox = document.getElementById('lightbox');
+            const lightboxImage = document.getElementById('lightboxImage');
+            const lightboxVideo = document.getElementById('lightboxVideo');
+            const lightboxVideoSource = document.getElementById('lightboxVideoSource');
+            const lightboxCaption = document.getElementById('lightboxCaption');
+            
+            // Nascondi entrambi
+            lightboxImage.style.display = 'none';
+            lightboxVideo.style.display = 'none';
+            
+            if (isVideo) {
+                // Mostra video
+                lightboxVideoSource.src = src;
+                lightboxVideo.load();
+                lightboxVideo.style.display = 'block';
+            } else {
+                // Mostra immagine
+                lightboxImage.src = src;
+                lightboxImage.style.display = 'block';
+            }
+            
+            lightboxCaption.textContent = caption;
+            lightbox.classList.remove('hidden');
+            document.body.style.overflow = 'hidden'; // Blocca scroll
+        }
+
+        function closeLightbox() {
+            const lightbox = document.getElementById('lightbox');
+            const lightboxVideo = document.getElementById('lightboxVideo');
+            
+            lightbox.classList.add('hidden');
+            lightboxVideo.pause(); // Ferma il video
+            document.body.style.overflow = 'auto'; // Riabilita scroll
+        }
+
+        // Chiudi lightbox con ESC
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape') {
+                closeLightbox();
+                closeSizeGuide();
+                closeModal();
+            }
+        });
 
         // Chiudi modal cliccando fuori
         window.onclick = function(event) {

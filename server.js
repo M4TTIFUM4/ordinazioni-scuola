@@ -94,6 +94,16 @@ const PRODOTTI = {
       prezzo: 5.00,
       immagine: '/images/cavatappi.png',
       taglie: ['Unica']
+    },
+    {
+      id: 'accendino',
+      nome: 'Accendino Scuola',
+      descrizione: 'Accendino personalizzato',
+      prezzo: 5.00,
+      video: '/images/accendino.mp4',
+      immagine: '/images/accendino-thumb.png',
+      taglie: ['Unica'],
+      hasVideo: true
     }
   ]
 };
