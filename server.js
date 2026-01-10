@@ -21,7 +21,7 @@ const PRODOTTI = {
       nome: 'Felpa Blu con Scritta Bianca',
       colore: 'blu',
       scritta: 'bianca',
-      prezzo: 25.00,
+      prezzo: 26.00,
       immagine: '/images/felpa-blu-bianca.png',
       taglie: ['S', 'M', 'L', 'XL', 'XXL']
     },
@@ -30,7 +30,7 @@ const PRODOTTI = {
       nome: 'Felpa Bianca con Scritta Nera',
       colore: 'grigia',
       scritta: 'nera',
-      prezzo: 25.00,
+      prezzo: 26.00,
       immagine: '/images/felpa-bianca-nera.png',
       taglie: ['S', 'M', 'L', 'XL', 'XXL']
     },
@@ -39,7 +39,7 @@ const PRODOTTI = {
       nome: 'Felpa Grigia con Scritta Blu',
       colore: 'grigia',
       scritta: 'blu',
-      prezzo: 25.00,
+      prezzo: 26.00,
       immagine: '/images/felpa-grigia-blu.png',
       taglie: ['S', 'M', 'L', 'XL', 'XXL']
     }
