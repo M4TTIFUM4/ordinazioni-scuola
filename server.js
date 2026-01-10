@@ -1,14 +1,48 @@
 // ========================================
-// SERVER ORDINAZIONI SCUOLA - VERSIONE COMPLETA
+// SERVER ORDINAZIONI - CON POSTGRESQL
+// DATI PERMANENTI - MAI PERSI!
 // ========================================
 
 const express = require('express');
-const fs = require('fs');
+const { Pool } = require('pg');
 const path = require('path');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
-const ORDERS_FILE = 'orders.json';
+
+// ========================================
+// CONNESSIONE POSTGRESQL
+// ========================================
+
+const pool = new Pool({
+  connectionString: process.env.DATABASE_URL,
+  ssl: process.env.DATABASE_URL ? { rejectUnauthorized: false } : false
+});
+
+// Crea tabella se non esiste
+async function initDatabase() {
+  try {
+    await pool.query(`
+      CREATE TABLE IF NOT EXISTS ordini (
+        id SERIAL PRIMARY KEY,
+        nome VARCHAR(100) NOT NULL,
+        cognome VARCHAR(100) NOT NULL,
+        classe VARCHAR(50) NOT NULL,
+        tipo VARCHAR(50) NOT NULL,
+        prodotto VARCHAR(200) NOT NULL,
+        prodotto_id VARCHAR(100) NOT NULL,
+        taglia VARCHAR(10) NOT NULL,
+        prezzo DECIMAL(10,2) NOT NULL,
+        data_ordine TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+      )
+    `);
+    console.log('✅ Database PostgreSQL connesso e tabella creata!');
+  } catch (error) {
+    console.error('❌ Errore inizializzazione database:', error);
+  }
+}
+
+initDatabase();
 
 // ========================================
 // CONFIGURAZIONE PRODOTTI E PREZZI
@@ -21,17 +55,17 @@ const PRODOTTI = {
       nome: 'Felpa Blu con Scritta Bianca',
       colore: 'blu',
       scritta: 'bianca',
-      prezzo: 26.00,
+      prezzo: 25.00,
       immagine: '/images/felpa-blu-bianca.png',
       taglie: ['S', 'M', 'L', 'XL', 'XXL']
     },
     {
       id: 'felpa-grigia-nera',
-      nome: 'Felpa Bianca con Scritta Nera',
+      nome: 'Felpa Grigia con Scritta Nera',
       colore: 'grigia',
       scritta: 'nera',
-      prezzo: 26.00,
-      immagine: '/images/felpa-bianca-nera.png',
+      prezzo: 25.00,
+      immagine: '/images/felpa-grigia-nera.png',
       taglie: ['S', 'M', 'L', 'XL', 'XXL']
     },
     {
@@ -39,7 +73,7 @@ const PRODOTTI = {
       nome: 'Felpa Grigia con Scritta Blu',
       colore: 'grigia',
       scritta: 'blu',
-      prezzo: 26.00,
+      prezzo: 25.00,
       immagine: '/images/felpa-grigia-blu.png',
       taglie: ['S', 'M', 'L', 'XL', 'XXL']
     }
@@ -58,7 +92,7 @@ const PRODOTTI = {
       nome: 'Maglietta Informatica',
       indirizzo: 'Informatica',
       prezzo: 15.00,
-      immagine: '/images/maglietta-informatico.png',
+      immagine: '/images/maglietta-informatica.png',
       taglie: ['S', 'M', 'L', 'XL', 'XXL']
     },
     {
@@ -83,7 +117,7 @@ const PRODOTTI = {
       id: 'borraccia',
       nome: 'Borraccia Scuola',
       descrizione: 'Borraccia termica personalizzata',
-      prezzo: 10.00,
+      prezzo: 12.00,
       immagine: '/images/borraccia.png',
       taglie: ['Unica']
     },
@@ -91,7 +125,7 @@ const PRODOTTI = {
       id: 'cavatappi',
       nome: 'Cavatappi Scuola',
       descrizione: 'Cavatappi personalizzato',
-      prezzo: 5.00,
+      prezzo: 8.00,
       immagine: '/images/cavatappi.png',
       taglie: ['Unica']
     },
@@ -99,7 +133,7 @@ const PRODOTTI = {
       id: 'accendino',
       nome: 'Accendino Scuola',
       descrizione: 'Accendino personalizzato',
-      prezzo: 5.00,
+      prezzo: 10.00,
       video: '/images/accendino.mp4',
       immagine: '/images/accendino-thumb.png',
       taglie: ['Unica'],
@@ -108,47 +142,15 @@ const PRODOTTI = {
   ]
 };
 
-// ========================================
-// PASSWORD ADMIN - CAMBIA QUI!
-// ========================================
+// Password Admin
 const ADMIN_PASSWORD = 'admin123';
 
-// ========================================
-// MIDDLEWARE
-// ========================================
-
+// Middleware
 app.use(express.json());
 app.use(express.static('public'));
 
 // ========================================
-// FUNZIONI DATABASE JSON
-// ========================================
-
-function readOrders() {
-    try {
-        if (!fs.existsSync(ORDERS_FILE)) {
-            return [];
-        }
-        const data = fs.readFileSync(ORDERS_FILE, 'utf8');
-        return JSON.parse(data);
-    } catch (error) {
-        console.error('Errore lettura ordini:', error);
-        return [];
-    }
-}
-
-function saveOrders(orders) {
-    try {
-        fs.writeFileSync(ORDERS_FILE, JSON.stringify(orders, null, 2));
-        return true;
-    } catch (error) {
-        console.error('Errore salvataggio ordini:', error);
-        return false;
-    }
-}
-
-// ========================================
-// API PUBBLICA: OTTIENI CATALOGO PRODOTTI
+// API PUBBLICA: CATALOGO
 // ========================================
 
 app.get('/api/catalogo', (req, res) => {
@@ -159,10 +161,9 @@ app.get('/api/catalogo', (req, res) => {
 // API PUBBLICA: CREA ORDINE
 // ========================================
 
-app.post('/api/orders', (req, res) => {
+app.post('/api/orders', async (req, res) => {
     const { nome, cognome, classe, prodottoId, taglia } = req.body;
     
-    // Validazione
     if (!nome || !cognome || !classe || !prodottoId || !taglia) {
         return res.status(400).json({ 
             success: false, 
@@ -175,24 +176,13 @@ app.post('/api/orders', (req, res) => {
     let tipo = '';
     
     PRODOTTI.felpe.forEach(f => {
-        if (f.id === prodottoId) {
-            prodotto = f;
-            tipo = 'felpa';
-        }
+        if (f.id === prodottoId) { prodotto = f; tipo = 'felpa'; }
     });
-    
     PRODOTTI.magliette.forEach(m => {
-        if (m.id === prodottoId) {
-            prodotto = m;
-            tipo = 'maglietta';
-        }
+        if (m.id === prodottoId) { prodotto = m; tipo = 'maglietta'; }
     });
-    
     PRODOTTI.accessori.forEach(a => {
-        if (a.id === prodottoId) {
-            prodotto = a;
-            tipo = 'accessorio';
-        }
+        if (a.id === prodottoId) { prodotto = a; tipo = 'accessorio'; }
     });
     
     if (!prodotto) {
@@ -202,7 +192,6 @@ app.post('/api/orders', (req, res) => {
         });
     }
     
-    // Verifica taglia disponibile
     if (!prodotto.taglie.includes(taglia)) {
         return res.status(400).json({ 
             success: false, 
@@ -210,31 +199,22 @@ app.post('/api/orders', (req, res) => {
         });
     }
     
-    // Crea ordine
-    const orders = readOrders();
-    
-    const newOrder = {
-        id: Date.now(),
-        nome: nome.trim(),
-        cognome: cognome.trim(),
-        classe: classe.trim(),
-        tipo: tipo,
-        prodotto: prodotto.nome,
-        prodottoId: prodotto.id,
-        taglia: taglia,
-        prezzo: prodotto.prezzo,
-        data: new Date().toISOString()
-    };
-    
-    orders.push(newOrder);
-    
-    if (saveOrders(orders)) {
+    try {
+        // Salva in PostgreSQL
+        const result = await pool.query(
+            `INSERT INTO ordini (nome, cognome, classe, tipo, prodotto, prodotto_id, taglia, prezzo)
+             VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
+             RETURNING *`,
+            [nome.trim(), cognome.trim(), classe.trim(), tipo, prodotto.nome, prodotto.id, taglia, prodotto.prezzo]
+        );
+        
         res.json({ 
             success: true, 
-            order: newOrder,
+            order: result.rows[0],
             totale: prodotto.prezzo
         });
-    } else {
+    } catch (error) {
+        console.error('Errore salvataggio ordine:', error);
         res.status(500).json({ 
             success: false, 
             message: 'Errore nel salvataggio dell\'ordine' 
@@ -258,10 +238,7 @@ app.post('/api/admin/login', (req, res) => {
     
     if (password === ADMIN_PASSWORD) {
         const token = Buffer.from(`admin:${Date.now()}`).toString('base64');
-        res.json({ 
-            success: true, 
-            token: token 
-        });
+        res.json({ success: true, token: token });
     } else {
         res.status(401).json({ 
             success: false, 
@@ -271,7 +248,7 @@ app.post('/api/admin/login', (req, res) => {
 });
 
 // ========================================
-// MIDDLEWARE AUTENTICAZIONE ADMIN
+// MIDDLEWARE AUTENTICAZIONE
 // ========================================
 
 function checkAdminAuth(req, res, next) {
@@ -303,61 +280,76 @@ function checkAdminAuth(req, res, next) {
 // API ADMIN: OTTIENI ORDINI
 // ========================================
 
-app.get('/api/orders', checkAdminAuth, (req, res) => {
-    const orders = readOrders();
-    res.json(orders);
+app.get('/api/orders', checkAdminAuth, async (req, res) => {
+    try {
+        const result = await pool.query(
+            'SELECT * FROM ordini ORDER BY data_ordine DESC'
+        );
+        res.json(result.rows);
+    } catch (error) {
+        console.error('Errore recupero ordini:', error);
+        res.status(500).json({ error: 'Errore nel recupero ordini' });
+    }
 });
 
 // ========================================
 // API ADMIN: STATISTICHE
 // ========================================
 
-app.get('/api/admin/stats', checkAdminAuth, (req, res) => {
-    const orders = readOrders();
-    
-    const stats = {
-        totaleOrdini: orders.length,
-        totaleFelpe: orders.filter(o => o.tipo === 'felpa').length,
-        totaleMagliette: orders.filter(o => o.tipo === 'maglietta').length,
-        incassoTotale: orders.reduce((sum, o) => sum + o.prezzo, 0).toFixed(2),
-        perProdotto: {}
-    };
-    
-    // Conta per prodotto
-    orders.forEach(order => {
-        if (!stats.perProdotto[order.prodotto]) {
-            stats.perProdotto[order.prodotto] = {
-                quantita: 0,
-                incasso: 0
-            };
-        }
-        stats.perProdotto[order.prodotto].quantita++;
-        stats.perProdotto[order.prodotto].incasso += order.prezzo;
-    });
-    
-    res.json(stats);
+app.get('/api/admin/stats', checkAdminAuth, async (req, res) => {
+    try {
+        const result = await pool.query('SELECT * FROM ordini');
+        const orders = result.rows;
+        
+        const stats = {
+            totaleOrdini: orders.length,
+            totaleFelpe: orders.filter(o => o.tipo === 'felpa').length,
+            totaleMagliette: orders.filter(o => o.tipo === 'maglietta').length,
+            incassoTotale: orders.reduce((sum, o) => sum + parseFloat(o.prezzo), 0).toFixed(2),
+            perProdotto: {}
+        };
+        
+        orders.forEach(order => {
+            if (!stats.perProdotto[order.prodotto]) {
+                stats.perProdotto[order.prodotto] = {
+                    quantita: 0,
+                    incasso: 0
+                };
+            }
+            stats.perProdotto[order.prodotto].quantita++;
+            stats.perProdotto[order.prodotto].incasso += parseFloat(order.prezzo);
+        });
+        
+        res.json(stats);
+    } catch (error) {
+        console.error('Errore statistiche:', error);
+        res.status(500).json({ error: 'Errore nel calcolo statistiche' });
+    }
 });
 
 // ========================================
 // API ADMIN: ELIMINA ORDINE
 // ========================================
 
-app.delete('/api/orders/:id', checkAdminAuth, (req, res) => {
+app.delete('/api/orders/:id', checkAdminAuth, async (req, res) => {
     const orderId = parseInt(req.params.id);
-    let orders = readOrders();
     
-    const filteredOrders = orders.filter(order => order.id !== orderId);
-    
-    if (filteredOrders.length === orders.length) {
-        return res.status(404).json({ 
-            success: false, 
-            message: 'Ordine non trovato' 
-        });
-    }
-    
-    if (saveOrders(filteredOrders)) {
-        res.json({ success: true });
-    } else {
+    try {
+        const result = await pool.query(
+            'DELETE FROM ordini WHERE id = $1 RETURNING *',
+            [orderId]
+        );
+        
+        if (result.rowCount > 0) {
+            res.json({ success: true });
+        } else {
+            res.status(404).json({ 
+                success: false, 
+                message: 'Ordine non trovato' 
+            });
+        }
+    } catch (error) {
+        console.error('Errore eliminazione ordine:', error);
         res.status(500).json({ 
             success: false, 
             message: 'Errore nell\'eliminazione' 
@@ -369,19 +361,27 @@ app.delete('/api/orders/:id', checkAdminAuth, (req, res) => {
 // API ADMIN: ESPORTA CSV
 // ========================================
 
-app.get('/api/export/csv', checkAdminAuth, (req, res) => {
-    const orders = readOrders();
-    
-    let csv = 'ID,Nome,Cognome,Classe,Tipo,Prodotto,Taglia,Prezzo,Data\n';
-    
-    orders.forEach(order => {
-        const data = new Date(order.data).toLocaleString('it-IT');
-        csv += `${order.id},"${order.nome}","${order.cognome}","${order.classe}","${order.tipo}","${order.prodotto}","${order.taglia}",${order.prezzo},"${data}"\n`;
-    });
-    
-    res.setHeader('Content-Type', 'text/csv; charset=utf-8');
-    res.setHeader('Content-Disposition', 'attachment; filename=ordinazioni.csv');
-    res.send(csv);
+app.get('/api/export/csv', checkAdminAuth, async (req, res) => {
+    try {
+        const result = await pool.query(
+            'SELECT * FROM ordini ORDER BY data_ordine DESC'
+        );
+        const orders = result.rows;
+        
+        let csv = 'ID,Nome,Cognome,Classe,Tipo,Prodotto,Taglia,Prezzo,Data\n';
+        
+        orders.forEach(order => {
+            const data = new Date(order.data_ordine).toLocaleString('it-IT');
+            csv += `${order.id},"${order.nome}","${order.cognome}","${order.classe}","${order.tipo}","${order.prodotto}","${order.taglia}",${order.prezzo},"${data}"\n`;
+        });
+        
+        res.setHeader('Content-Type', 'text/csv; charset=utf-8');
+        res.setHeader('Content-Disposition', 'attachment; filename=ordinazioni.csv');
+        res.send(csv);
+    } catch (error) {
+        console.error('Errore esportazione CSV:', error);
+        res.status(500).send('Errore nell\'esportazione');
+    }
 });
 
 // ========================================
@@ -391,6 +391,7 @@ app.get('/api/export/csv', checkAdminAuth, (req, res) => {
 app.listen(PORT, '0.0.0.0', () => {
     console.log(`\n🚀 Server avviato con successo!`);
     console.log(`📍 URL: http://localhost:${PORT}`);
+    console.log(`🗄️  Database: PostgreSQL (DATI PERMANENTI)`);
     console.log(`🔐 Password admin: ${ADMIN_PASSWORD}`);
     console.log(`\n💰 PREZZI CONFIGURATI:`);
     console.log(`   Felpe: €${PRODOTTI.felpe[0].prezzo}`);
