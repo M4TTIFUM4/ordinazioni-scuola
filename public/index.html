@@ -5,18 +5,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Ordinazioni Felpe e Magliette</title>
     <link rel="stylesheet" href="styles.css">
-    <script src="https://js.hcaptcha.com/1/api.js" async defer></script>
 </head>
 <body>
-    <!-- Avviso Grande -->
-    <div id="warningBanner" class="warning-banner">
-        <div class="warning-content">
-            <h1 class="warning-title">⚠️ ATTENZIONE STRONZI ⚠️</h1>
-            <p class="warning-text">Basta fare ordini del cazzo!<br>Chi scrive cazzate verrà identificato e segnalato!</p>
-            <button onclick="closeWarning()" class="btn-warning-close">Ho capito</button>
-        </div>
-    </div>
-
     <div class="container">
         <header>
             <h1>🎓 Ordinazioni Felpe e Magliette</h1>
@@ -288,20 +278,12 @@
             
             if (!prodottoSelezionato) return;
             
-            // Verifica hCaptcha
-            const captchaResponse = hcaptcha.getResponse();
-            if (!captchaResponse) {
-                showMessage('❌ Completa il CAPTCHA per continuare', 'error');
-                return;
-            }
-            
             const formData = {
                 nome: document.getElementById('nome').value,
                 cognome: document.getElementById('cognome').value,
                 classe: document.getElementById('classe').value,
                 prodottoId: prodottoSelezionato.id,
-                taglia: document.getElementById('taglia').value,
-                captcha: captchaResponse
+                taglia: document.getElementById('taglia').value
             };
             
             try {
@@ -318,7 +300,6 @@
                 if (result.success) {
                     showMessage(`✅ Ordine confermato! Totale: €${result.totale.toFixed(2)}`, 'success');
                     document.getElementById('orderForm').reset();
-                    hcaptcha.reset(); // Reset captcha
                     
                     setTimeout(() => {
                         closeModal();
@@ -346,12 +327,6 @@
 
         function closeSizeGuide() {
             document.getElementById('sizeGuideModal').classList.add('hidden');
-        }
-
-        // Funzione Chiudi Avviso
-        function closeWarning() {
-            document.getElementById('warningBanner').style.display = 'none';
-            document.body.style.overflow = 'auto';
         }
 
         // Funzione Anteprima Davanti/Dietro

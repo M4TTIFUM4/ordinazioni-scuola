@@ -70,17 +70,17 @@ const PRODOTTI = {
       nome: 'Felpa Blu con Scritta Bianca',
       colore: 'blu',
       scritta: 'bianca',
-      prezzo: 26.00,
+      prezzo: 25.00,
       immagine: '/images/felpa-blu-bianca.png',
       taglie: ['S', 'M', 'L', 'XL', 'XXL']
     },
     {
-      id: 'felpa-bianca-nera',
+      id: 'felpa-grigia-nera',
       nome: 'Felpa Grigia con Scritta Nera',
       colore: 'grigia',
       scritta: 'nera',
-      prezzo: 26.00,
-      immagine: '/images/felpa-bianca-nera.png',
+      prezzo: 25.00,
+      immagine: '/images/felpa-grigia-nera.png',
       taglie: ['S', 'M', 'L', 'XL', 'XXL']
     },
     {
@@ -88,7 +88,7 @@ const PRODOTTI = {
       nome: 'Felpa Grigia con Scritta Blu',
       colore: 'grigia',
       scritta: 'blu',
-      prezzo: 26.00,
+      prezzo: 25.00,
       immagine: '/images/felpa-grigia-blu.png',
       taglie: ['S', 'M', 'L', 'XL', 'XXL']
     },
@@ -97,7 +97,7 @@ const PRODOTTI = {
       nome: 'Felpa Nera con Scritta Bianca',
       colore: 'nera',
       scritta: 'bianca',
-      prezzo: 26.00,
+      prezzo: 25.00,
       immagine: '/images/felpa-nera-bianca.png',
       taglie: ['S', 'M', 'L', 'XL', 'XXL']
     }
@@ -116,7 +116,7 @@ const PRODOTTI = {
       nome: 'Maglietta Informatica',
       indirizzo: 'Informatica',
       prezzo: 15.00,
-      immagine: '/images/maglietta-informatico.png',
+      immagine: '/images/maglietta-informatica.png',
       taglie: ['S', 'M', 'L', 'XL', 'XXL']
     },
     {
@@ -141,7 +141,7 @@ const PRODOTTI = {
       id: 'borraccia',
       nome: 'Borraccia Scuola',
       descrizione: 'Borraccia termica personalizzata',
-      prezzo: 10.00,
+      prezzo: 12.00,
       immagine: '/images/borraccia.png',
       taglie: ['Unica']
     },
@@ -149,7 +149,7 @@ const PRODOTTI = {
       id: 'cavatappi',
       nome: 'Cavatappi Scuola',
       descrizione: 'Cavatappi personalizzato',
-      prezzo: 5.00,
+      prezzo: 8.00,
       immagine: '/images/cavatappi.png',
       taglie: ['Unica']
     },
@@ -157,7 +157,7 @@ const PRODOTTI = {
       id: 'accendino',
       nome: 'Accendino Scuola',
       descrizione: 'Accendino personalizzato',
-      prezzo: 5.00,
+      prezzo: 10.00,
       video: '/images/accendino.mp4',
       immagine: '/images/accendino-thumb.png',
       taglie: ['Unica'],
@@ -168,6 +168,9 @@ const PRODOTTI = {
 
 // Password Admin
 const ADMIN_PASSWORD = 'admin123';
+
+// hCaptcha Secret Key
+const HCAPTCHA_SECRET = process.env.HCAPTCHA_SECRET || 'TUA_SECRET_KEY_QUI';
 
 // Middleware
 app.use(express.json());
@@ -186,12 +189,70 @@ app.get('/api/catalogo', (req, res) => {
 // ========================================
 
 app.post('/api/orders', async (req, res) => {
-    const { nome, cognome, classe, prodottoId, taglia } = req.body;
+    const { nome, cognome, classe, prodottoId, taglia, captcha } = req.body;
     
     if (!nome || !cognome || !classe || !prodottoId || !taglia) {
         return res.status(400).json({ 
             success: false, 
             message: 'Tutti i campi sono obbligatori' 
+        });
+    }
+    
+    // Verifica hCaptcha
+    if (!captcha) {
+        return res.status(400).json({ 
+            success: false, 
+            message: 'Completa il CAPTCHA' 
+        });
+    }
+    
+    try {
+        // Verifica captcha con hCaptcha API
+        const https = require('https');
+        const captchaData = new URLSearchParams({
+            secret: HCAPTCHA_SECRET,
+            response: captcha
+        });
+        
+        const captchaVerified = await new Promise((resolve, reject) => {
+            const options = {
+                hostname: 'hcaptcha.com',
+                path: '/siteverify',
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded'
+                }
+            };
+            
+            const req = https.request(options, (res) => {
+                let data = '';
+                res.on('data', chunk => data += chunk);
+                res.on('end', () => {
+                    try {
+                        const result = JSON.parse(data);
+                        resolve(result.success);
+                    } catch (e) {
+                        reject(e);
+                    }
+                });
+            });
+            
+            req.on('error', reject);
+            req.write(captchaData.toString());
+            req.end();
+        });
+        
+        if (!captchaVerified) {
+            return res.status(400).json({ 
+                success: false, 
+                message: 'CAPTCHA non valido' 
+            });
+        }
+    } catch (error) {
+        console.error('Errore verifica CAPTCHA:', error);
+        return res.status(500).json({ 
+            success: false, 
+            message: 'Errore nella verifica del CAPTCHA' 
         });
     }
     
