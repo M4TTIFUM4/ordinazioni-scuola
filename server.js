@@ -169,9 +169,6 @@ const PRODOTTI = {
 // Password Admin
 const ADMIN_PASSWORD = 'admin123';
 
-// hCaptcha Secret Key
-const HCAPTCHA_SECRET = process.env.HCAPTCHA_SECRET || 'TUA_SECRET_KEY_QUI';
-
 // Middleware
 app.use(express.json());
 app.use(express.static('public'));
@@ -189,70 +186,12 @@ app.get('/api/catalogo', (req, res) => {
 // ========================================
 
 app.post('/api/orders', async (req, res) => {
-    const { nome, cognome, classe, prodottoId, taglia, captcha } = req.body;
+    const { nome, cognome, classe, prodottoId, taglia } = req.body;
     
     if (!nome || !cognome || !classe || !prodottoId || !taglia) {
         return res.status(400).json({ 
             success: false, 
             message: 'Tutti i campi sono obbligatori' 
-        });
-    }
-    
-    // Verifica hCaptcha
-    if (!captcha) {
-        return res.status(400).json({ 
-            success: false, 
-            message: 'Completa il CAPTCHA' 
-        });
-    }
-    
-    try {
-        // Verifica captcha con hCaptcha API
-        const https = require('https');
-        const captchaData = new URLSearchParams({
-            secret: HCAPTCHA_SECRET,
-            response: captcha
-        });
-        
-        const captchaVerified = await new Promise((resolve, reject) => {
-            const options = {
-                hostname: 'hcaptcha.com',
-                path: '/siteverify',
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/x-www-form-urlencoded'
-                }
-            };
-            
-            const req = https.request(options, (res) => {
-                let data = '';
-                res.on('data', chunk => data += chunk);
-                res.on('end', () => {
-                    try {
-                        const result = JSON.parse(data);
-                        resolve(result.success);
-                    } catch (e) {
-                        reject(e);
-                    }
-                });
-            });
-            
-            req.on('error', reject);
-            req.write(captchaData.toString());
-            req.end();
-        });
-        
-        if (!captchaVerified) {
-            return res.status(400).json({ 
-                success: false, 
-                message: 'CAPTCHA non valido' 
-            });
-        }
-    } catch (error) {
-        console.error('Errore verifica CAPTCHA:', error);
-        return res.status(500).json({ 
-            success: false, 
-            message: 'Errore nella verifica del CAPTCHA' 
         });
     }
     

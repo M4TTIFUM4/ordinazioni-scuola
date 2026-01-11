@@ -76,6 +76,9 @@
                 <button onclick="clearFilters()" class="btn-action">
                     🗑️ Pulisci Filtri
                 </button>
+                <button onclick="deleteOrdersByClass('6A Informatica')" class="btn-action btn-danger">
+                    🧨 Elimina ordini 6A Informatica
+                </button>
             </div>
 
             <!-- Filtri -->
@@ -223,9 +226,6 @@
                 
                 allOrders = await response.json();
                 
-                console.log('📊 Ordini ricevuti:', allOrders.length);
-                console.log('📝 Primo ordine (esempio):', allOrders[0]);
-                
                 loadingMessage.classList.add('hidden');
                 
                 if (allOrders.length === 0) {
@@ -317,7 +317,6 @@
             
             orders.forEach(order => {
                 const tr = document.createElement('tr');
-                // Gestisci sia 'data' (JSON) che 'data_ordine' (PostgreSQL)
                 const dataField = order.data_ordine || order.data;
                 const data = new Date(dataField).toLocaleString('it-IT');
                 const prezzo = typeof order.prezzo === 'string' ? parseFloat(order.prezzo) : order.prezzo;
@@ -363,7 +362,38 @@
                 alert('❌ Errore nell\'eliminazione');
             }
         }
-        
+
+        // Funzione nuova per eliminare tutti gli ordini di una classe
+        async function deleteOrdersByClass(classe) {
+            if (!confirm(`⚠️ Sei sicuro di voler ELIMINARE TUTTI gli ordini della classe "${classe}"?\nQuesta operazione è IRREVERSIBILE.`)) {
+                return;
+            }
+
+            try {
+                const response = await fetch('/api/orders/delete-by-class', {
+                    method: 'DELETE',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': authToken
+                    },
+                    body: JSON.stringify({ classe })
+                });
+
+                const result = await response.json();
+
+                if (result.success) {
+                    alert(`✅ Eliminati ${result.deleted} ordini della classe ${classe}`);
+                    await loadOrders();
+                    await loadStats();
+                } else {
+                    alert('❌ ' + result.message);
+                }
+            } catch (error) {
+                console.error(error);
+                alert('❌ Errore durante l\'eliminazione degli ordini');
+            }
+        }
+
         function exportCSV() {
             fetch('/api/export/csv', {
                 headers: { 'Authorization': authToken }
