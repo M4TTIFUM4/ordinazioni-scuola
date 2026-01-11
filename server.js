@@ -317,6 +317,40 @@ app.get('/api/orders', checkAdminAuth, async (req, res) => {
 });
 
 // ========================================
+// API ADMIN: ELIMINA ORDINI PER CLASSE
+// ========================================
+
+app.delete('/api/orders/delete-by-class', checkAdminAuth, async (req, res) => {
+    const { classe } = req.body;
+
+    if (!classe) {
+        return res.status(400).json({ 
+            success: false, 
+            message: 'Classe non specificata' 
+        });
+    }
+
+    try {
+        const result = await pool.query(
+            'DELETE FROM ordini WHERE classe = $1 RETURNING *',
+            [classe]
+        );
+        
+        // result.rowCount indica quanti record sono stati effettivamente eliminati
+        res.json({ 
+            success: true, 
+            deleted: result.rowCount,
+            message: `Eliminati ${result.rowCount} ordini per la classe ${classe}`
+        });
+    } catch (error) {
+        console.error('Errore eliminazione ordini per classe:', error);
+        res.status(500).json({ 
+            success: false, 
+            message: 'Errore durante l\'eliminazione degli ordini' 
+        });
+    }
+});
+// ========================================
 // API ADMIN: STATISTICHE
 // ========================================
 
