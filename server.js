@@ -14,9 +14,24 @@ const PORT = process.env.PORT || 3000;
 // CONNESSIONE POSTGRESQL
 // ========================================
 
+console.log('🔍 DATABASE_URL presente:', !!process.env.DATABASE_URL);
+console.log('🔍 DATABASE_URL (primi 20 char):', process.env.DATABASE_URL ? process.env.DATABASE_URL.substring(0, 20) : 'NON IMPOSTATA');
+
 const pool = new Pool({
   connectionString: process.env.DATABASE_URL,
-  ssl: process.env.DATABASE_URL ? { rejectUnauthorized: false } : false
+  ssl: process.env.DATABASE_URL ? { 
+    rejectUnauthorized: false,
+    require: true 
+  } : false
+});
+
+// Test connessione
+pool.query('SELECT NOW()', (err, res) => {
+  if (err) {
+    console.error('❌ Test connessione fallito:', err.message);
+  } else {
+    console.log('✅ Test connessione riuscito:', res.rows[0]);
+  }
 });
 
 // Crea tabella se non esiste
@@ -61,11 +76,11 @@ const PRODOTTI = {
     },
     {
       id: 'felpa-grigia-nera',
-      nome: 'Felpa Bianca con Scritta Nera',
+      nome: 'Felpa Grigia con Scritta Nera',
       colore: 'grigia',
       scritta: 'nera',
       prezzo: 25.00,
-      immagine: '/images/felpa-bianca-nera.png',
+      immagine: '/images/felpa-grigia-nera.png',
       taglie: ['S', 'M', 'L', 'XL', 'XXL']
     },
     {
@@ -92,7 +107,7 @@ const PRODOTTI = {
       nome: 'Maglietta Informatica',
       indirizzo: 'Informatica',
       prezzo: 15.00,
-      immagine: '/images/maglietta-informatico.png',
+      immagine: '/images/maglietta-informatica.png',
       taglie: ['S', 'M', 'L', 'XL', 'XXL']
     },
     {
