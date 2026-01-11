@@ -70,7 +70,7 @@ const PRODOTTI = {
       nome: 'Felpa Blu con Scritta Bianca',
       colore: 'blu',
       scritta: 'bianca',
-      prezzo: 25.00,
+      prezzo: 26.00,
       immagine: '/images/felpa-blu-bianca.png',
       taglie: ['S', 'M', 'L', 'XL', 'XXL']
     },
@@ -79,7 +79,7 @@ const PRODOTTI = {
       nome: 'Felpa Grigia con Scritta Nera',
       colore: 'grigia',
       scritta: 'nera',
-      prezzo: 25.00,
+      prezzo: 26.00,
       immagine: '/images/felpa-bianca-nera.png',
       taglie: ['S', 'M', 'L', 'XL', 'XXL']
     },
@@ -88,7 +88,7 @@ const PRODOTTI = {
       nome: 'Felpa Grigia con Scritta Blu',
       colore: 'grigia',
       scritta: 'blu',
-      prezzo: 25.00,
+      prezzo: 26.00,
       immagine: '/images/felpa-grigia-blu.png',
       taglie: ['S', 'M', 'L', 'XL', 'XXL']
     },
@@ -97,7 +97,7 @@ const PRODOTTI = {
       nome: 'Felpa Nera con Scritta Bianca',
       colore: 'nera',
       scritta: 'bianca',
-      prezzo: 25.00,
+      prezzo: 26.00,
       immagine: '/images/felpa-nera-bianca.png',
       taglie: ['S', 'M', 'L', 'XL', 'XXL']
     }
@@ -141,7 +141,7 @@ const PRODOTTI = {
       id: 'borraccia',
       nome: 'Borraccia Scuola',
       descrizione: 'Borraccia termica personalizzata',
-      prezzo: 12.00,
+      prezzo: 10.00,
       immagine: '/images/borraccia.png',
       taglie: ['Unica']
     },
@@ -149,7 +149,7 @@ const PRODOTTI = {
       id: 'cavatappi',
       nome: 'Cavatappi Scuola',
       descrizione: 'Cavatappi personalizzato',
-      prezzo: 8.00,
+      prezzo: 5.00,
       immagine: '/images/cavatappi.png',
       taglie: ['Unica']
     },
@@ -157,7 +157,7 @@ const PRODOTTI = {
       id: 'accendino',
       nome: 'Accendino Scuola',
       descrizione: 'Accendino personalizzato',
-      prezzo: 10.00,
+      prezzo: 5.00,
       video: '/images/accendino.mp4',
       immagine: '/images/accendino-thumb.png',
       taglie: ['Unica'],
