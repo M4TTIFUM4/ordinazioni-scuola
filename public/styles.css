@@ -583,6 +583,13 @@ footer {
     font-size: 1rem;
 }
 
+.stat-price {
+    color: #10b981;
+    font-size: 1.3rem;
+    font-weight: 600;
+    margin-top: 5px;
+}
+
 .card {
     background: white;
     border-radius: 15px;

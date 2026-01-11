@@ -217,7 +217,14 @@
                     headers: { 'Authorization': authToken }
                 });
                 
+                if (!response.ok) {
+                    throw new Error('Errore nel caricamento');
+                }
+                
                 allOrders = await response.json();
+                
+                console.log('📊 Ordini ricevuti:', allOrders.length);
+                console.log('📝 Primo ordine (esempio):', allOrders[0]);
                 
                 loadingMessage.classList.add('hidden');
                 
@@ -230,7 +237,8 @@
                     initFilters();
                 }
             } catch (error) {
-                loadingMessage.textContent = '❌ Errore nel caricamento';
+                console.error('❌ Errore:', error);
+                loadingMessage.textContent = '❌ Errore nel caricamento degli ordini: ' + error.message;
             }
         }
         
@@ -252,11 +260,12 @@
             let html = '<div class="stats-grid">';
             
             for (const [prodotto, data] of Object.entries(stats.perProdotto)) {
+                const incasso = typeof data.incasso === 'string' ? parseFloat(data.incasso) : data.incasso;
                 html += `
                     <div class="stat-card">
                         <div class="stat-number">${data.quantita}</div>
                         <div class="stat-label">${prodotto}</div>
-                        <div class="stat-price">€${data.incasso.toFixed(2)}</div>
+                        <div class="stat-price">€${incasso.toFixed(2)}</div>
                     </div>
                 `;
             }
@@ -270,7 +279,10 @@
             document.getElementById('totalFelpe').textContent = allOrders.filter(o => o.tipo === 'felpa').length;
             document.getElementById('totalMagliette').textContent = allOrders.filter(o => o.tipo === 'maglietta').length;
             
-            const totale = allOrders.reduce((sum, o) => sum + o.prezzo, 0);
+            const totale = allOrders.reduce((sum, o) => {
+                const prezzo = typeof o.prezzo === 'string' ? parseFloat(o.prezzo) : o.prezzo;
+                return sum + prezzo;
+            }, 0);
             document.getElementById('incassoTotale').textContent = `€${totale.toFixed(2)}`;
         }
         
@@ -305,7 +317,10 @@
             
             orders.forEach(order => {
                 const tr = document.createElement('tr');
-                const data = new Date(order.data).toLocaleString('it-IT');
+                // Gestisci sia 'data' (JSON) che 'data_ordine' (PostgreSQL)
+                const dataField = order.data_ordine || order.data;
+                const data = new Date(dataField).toLocaleString('it-IT');
+                const prezzo = typeof order.prezzo === 'string' ? parseFloat(order.prezzo) : order.prezzo;
                 
                 tr.innerHTML = `
                     <td>${order.id}</td>
@@ -314,7 +329,7 @@
                     <td>${order.classe}</td>
                     <td>${order.prodotto}</td>
                     <td><span class="badge">${order.taglia}</span></td>
-                    <td>€${order.prezzo.toFixed(2)}</td>
+                    <td>€${prezzo.toFixed(2)}</td>
                     <td>${data}</td>
                     <td>
                         <button onclick="deleteOrder(${order.id})" class="btn-delete" title="Elimina">
