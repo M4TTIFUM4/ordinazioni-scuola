@@ -376,7 +376,7 @@
                         'Content-Type': 'application/json',
                         'Authorization': authToken
                     },
-                    body: JSON.stringify({ classe })
+                    body: JSON.stringify({ "classe" : classe })
                 });
 
                 const result = await response.json();
