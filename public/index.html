@@ -8,15 +8,6 @@
     <script src="https://js.hcaptcha.com/1/api.js" async defer></script>
 </head>
 <body>
-    <!-- Avviso Grande -->
-    <div id="warningBanner" class="warning-banner">
-        <div class="warning-content">
-            <h1 class="warning-title">⚠️ ATTENZIONE STRONZI ⚠️</h1>
-            <p class="warning-text">Basta fare ordini del cazzo!<br>Chi scrive cazzate verrà identificato e segnalato!</p>
-            <button onclick="closeWarning()" class="btn-warning-close">Ho capito</button>
-        </div>
-    </div>
-
     <div class="container">
         <header>
             <h1>🎓 Ordinazioni Felpe e Magliette</h1>
@@ -51,13 +42,13 @@
                 <!-- Guida Felpe -->
                 <div class="size-guide-section">
                     <h3>👕 Felpe</h3>
-                    <img src="/images/taglie.png" alt="Guida Taglie Felpe" class="size-guide-img" onerror="this.src='https://via.placeholder.com/800x600/667eea/ffffff?text=Guida+Taglie+Felpe'">
+                    <img src="/images/taglie.png" alt="Guida Taglie Felpe" class="size-guide-img" onclick="openLightbox('/images/taglie.png', 'Guida Taglie Felpe', false)" onerror="this.src='https://via.placeholder.com/800x600/667eea/ffffff?text=Guida+Taglie+Felpe'">
                 </div>
                 
                 <!-- Guida Magliette -->
                 <div class="size-guide-section">
                     <h3>👚 Magliette</h3>
-                    <img src="/images/taglie-magliette.png" alt="Guida Taglie Magliette" class="size-guide-img" onerror="this.src='https://via.placeholder.com/800x600/764ba2/ffffff?text=Guida+Taglie+Magliette'">
+                    <img src="/images/taglie-magliette.png" alt="Guida Taglie Magliette" class="size-guide-img" onclick="openLightbox('/images/taglie-magliette.png', 'Guida Taglie Magliette', false)" onerror="this.src='https://via.placeholder.com/800x600/764ba2/ffffff?text=Guida+Taglie+Magliette'">
                 </div>
             </div>
         </div>
@@ -355,12 +346,6 @@
 
         function closeSizeGuide() {
             document.getElementById('sizeGuideModal').classList.add('hidden');
-        }
-
-        // Funzione Chiudi Avviso
-        function closeWarning() {
-            document.getElementById('warningBanner').style.display = 'none';
-            document.body.style.overflow = 'auto';
         }
 
         // Funzione Anteprima Davanti/Dietro
