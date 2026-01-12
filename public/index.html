@@ -219,11 +219,18 @@
         }
 
         function openModalById(prodottoId) {
+            console.log('🔍 openModalById chiamato con ID:', prodottoId);
+            console.log('📦 Prodotti disponibili:', Object.keys(catalogoProdotti));
+            
             const prodotto = catalogoProdotti[prodottoId];
+            
             if (!prodotto) {
-                console.error('Prodotto non trovato:', prodottoId);
+                console.error('❌ Prodotto non trovato:', prodottoId);
+                alert('Errore: Prodotto non trovato. Ricarica la pagina.');
                 return;
             }
+            
+            console.log('✅ Prodotto trovato:', prodotto);
             openModal(prodotto);
         }
 
