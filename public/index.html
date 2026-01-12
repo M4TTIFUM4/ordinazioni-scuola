@@ -208,7 +208,7 @@
                     <p class="product-description">${descrizione}</p>
                     <div class="product-footer">
                         <span class="product-price">€${prodotto.prezzo.toFixed(2)}</span>
-                        <button class="btn-order" onclick="openModalById('${prodotto.id}')">
+                        <button class="btn-order" onclick='openModal(${JSON.stringify(prodotto)})'>
                             Ordina
                         </button>
                     </div>
@@ -216,22 +216,6 @@
             `;
             
             return card;
-        }
-
-        function openModalById(prodottoId) {
-            console.log('🔍 openModalById chiamato con ID:', prodottoId);
-            console.log('📦 Prodotti disponibili:', Object.keys(catalogoProdotti));
-            
-            const prodotto = catalogoProdotti[prodottoId];
-            
-            if (!prodotto) {
-                console.error('❌ Prodotto non trovato:', prodottoId);
-                alert('Errore: Prodotto non trovato. Ricarica la pagina.');
-                return;
-            }
-            
-            console.log('✅ Prodotto trovato:', prodotto);
-            openModal(prodotto);
         }
 
         function openModal(prodotto) {
