@@ -5,7 +5,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Ordinazioni Felpe e Magliette</title>
     <link rel="stylesheet" href="styles.css">
-    <script src="https://js.hcaptcha.com/1/api.js" async defer></script>
 </head>
 <body>
     <div class="container">
@@ -209,7 +208,7 @@
                     <p class="product-description">${descrizione}</p>
                     <div class="product-footer">
                         <span class="product-price">€${prodotto.prezzo.toFixed(2)}</span>
-                        <button class="btn-order" onclick='openModal(${JSON.stringify(prodotto)})'>
+                        <button class="btn-order" onclick="openModalById('${prodotto.id}')">
                             Ordina
                         </button>
                     </div>
@@ -219,60 +218,87 @@
             return card;
         }
 
+        function openModalById(prodottoId) {
+            const prodotto = catalogoProdotti[prodottoId];
+            if (!prodotto) {
+                console.error('Prodotto non trovato:', prodottoId);
+                return;
+            }
+            openModal(prodotto);
+        }
+
         function openModal(prodotto) {
+            console.log('🔍 openModal chiamata con:', prodotto);
+            
             prodottoSelezionato = prodotto;
             
-            // Mostra dettaglio prodotto con video o immagine
-            const modalProduct = document.getElementById('modalProduct');
-            
-            let mediaHTML = '';
-            if (prodotto.hasVideo) {
-                mediaHTML = `
-                    <video autoplay loop muted playsinline controls onclick="openLightbox('${prodotto.video}', '${prodotto.nome}', true)" style="width: 120px; height: 120px; object-fit: cover; border-radius: 10px; cursor: pointer;">
-                        <source src="${prodotto.video}" type="video/mp4">
-                    </video>
+            try {
+                // Mostra dettaglio prodotto con video o immagine
+                const modalProduct = document.getElementById('modalProduct');
+                
+                let mediaHTML = '';
+                if (prodotto.hasVideo) {
+                    mediaHTML = `
+                        <video autoplay loop muted playsinline controls onclick="openLightbox('${prodotto.video}', '${prodotto.nome}', true)" style="width: 120px; height: 120px; object-fit: cover; border-radius: 10px; cursor: pointer;">
+                            <source src="${prodotto.video}" type="video/mp4">
+                        </video>
+                    `;
+                } else {
+                    mediaHTML = `<img src="${prodotto.immagine}" alt="${prodotto.nome}" onclick="openLightbox('${prodotto.immagine}', '${prodotto.nome}', false)" style="cursor: pointer;" onerror="this.src='https://via.placeholder.com/500x500/667eea/ffffff?text=Prodotto'">`;
+                }
+                
+                modalProduct.innerHTML = `
+                    ${mediaHTML}
+                    <div>
+                        <h2>${prodotto.nome}</h2>
+                        <p class="modal-price">€${prodotto.prezzo.toFixed(2)}</p>
+                    </div>
                 `;
-            } else {
-                mediaHTML = `<img src="${prodotto.immagine}" alt="${prodotto.nome}" onclick="openLightbox('${prodotto.immagine}', '${prodotto.nome}', false)" style="cursor: pointer;" onerror="this.src='https://via.placeholder.com/500x500/667eea/ffffff?text=Prodotto'">`;
+                
+                console.log('✅ Modal product HTML creato');
+                
+                // Mostra anteprima davanti/dietro per magliette
+                const previewToggle = document.getElementById('previewToggle');
+                const previewImage = document.getElementById('previewImage');
+                
+                if (prodotto.id && prodotto.id.startsWith('maglietta-')) {
+                    previewToggle.classList.remove('hidden');
+                    previewImage.src = '/images/davanti.png';
+                    // Reset pulsanti
+                    document.querySelectorAll('.btn-preview').forEach(btn => btn.classList.remove('active'));
+                    const firstBtn = document.querySelector('.btn-preview');
+                    if (firstBtn) firstBtn.classList.add('active');
+                } else {
+                    previewToggle.classList.add('hidden');
+                }
+                
+                console.log('✅ Preview toggle configurato');
+                
+                // Popola taglie
+                const tagliaSelect = document.getElementById('taglia');
+                tagliaSelect.innerHTML = '<option value="">Seleziona taglia...</option>';
+                prodotto.taglie.forEach(taglia => {
+                    const option = document.createElement('option');
+                    option.value = taglia;
+                    option.textContent = taglia;
+                    tagliaSelect.appendChild(option);
+                });
+                
+                console.log('✅ Taglie popolate:', prodotto.taglie);
+                
+                // Mostra prezzo
+                document.getElementById('totalPrice').textContent = `€${prodotto.prezzo.toFixed(2)}`;
+                
+                // Mostra modal
+                const modal = document.getElementById('orderModal');
+                modal.classList.remove('hidden');
+                
+                console.log('✅ Modal mostrato');
+                
+            } catch (error) {
+                console.error('❌ ERRORE in openModal:', error);
+                alert('Errore nell\'apertura del modal: ' + error.message);
             }
-            
-            modalProduct.innerHTML = `
-                ${mediaHTML}
-                <div>
-                    <h2>${prodotto.nome}</h2>
-                    <p class="modal-price">€${prodotto.prezzo.toFixed(2)}</p>
-                </div>
-            `;
-            
-            // Mostra anteprima davanti/dietro per magliette
-            const previewToggle = document.getElementById('previewToggle');
-            const previewImage = document.getElementById('previewImage');
-            
-            if (prodotto.id && prodotto.id.startsWith('maglietta-')) {
-                previewToggle.classList.remove('hidden');
-                previewImage.src = '/images/davanti.png';
-                // Reset pulsanti
-                document.querySelectorAll('.btn-preview').forEach(btn => btn.classList.remove('active'));
-                document.querySelector('.btn-preview').classList.add('active');
-            } else {
-                previewToggle.classList.add('hidden');
-            }
-            
-            // Popola taglie
-            const tagliaSelect = document.getElementById('taglia');
-            tagliaSelect.innerHTML = '<option value="">Seleziona taglia...</option>';
-            prodotto.taglie.forEach(taglia => {
-                const option = document.createElement('option');
-                option.value = taglia;
-                option.textContent = taglia;
-                tagliaSelect.appendChild(option);
-            });
-            
-            // Mostra prezzo
-            document.getElementById('totalPrice').textContent = `€${prodotto.prezzo.toFixed(2)}`;
-            
-            // Mostra modal
-            document.getElementById('orderModal').classList.remove('hidden');
         }
 
         function closeModal() {
@@ -288,20 +314,12 @@
             
             if (!prodottoSelezionato) return;
             
-            // Verifica hCaptcha
-            const captchaResponse = hcaptcha.getResponse();
-            if (!captchaResponse) {
-                showMessage('❌ Completa il CAPTCHA per continuare', 'error');
-                return;
-            }
-            
             const formData = {
                 nome: document.getElementById('nome').value,
                 cognome: document.getElementById('cognome').value,
                 classe: document.getElementById('classe').value,
                 prodottoId: prodottoSelezionato.id,
-                taglia: document.getElementById('taglia').value,
-                captcha: captchaResponse
+                taglia: document.getElementById('taglia').value
             };
             
             try {
@@ -318,7 +336,6 @@
                 if (result.success) {
                     showMessage(`✅ Ordine confermato! Totale: €${result.totale.toFixed(2)}`, 'success');
                     document.getElementById('orderForm').reset();
-                    hcaptcha.reset(); // Reset captcha
                     
                     setTimeout(() => {
                         closeModal();
@@ -346,6 +363,11 @@
 
         function closeSizeGuide() {
             document.getElementById('sizeGuideModal').classList.add('hidden');
+        }
+
+        // Funzione placeholder (per compatibilità)
+        function closeWarning() {
+            // Funzione vuota - avviso rimosso
         }
 
         // Funzione Anteprima Davanti/Dietro
