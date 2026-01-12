@@ -383,6 +383,32 @@ footer {
     box-shadow: 0 8px 20px rgba(16, 185, 129, 0.4);
 }
 
+/* Sezioni Guida Taglie */
+.size-guide-section {
+    margin: 30px 0;
+    text-align: center;
+}
+
+.size-guide-section h3 {
+    font-size: 1.8rem;
+    color: #667eea;
+    margin-bottom: 20px;
+    font-weight: 700;
+}
+
+.size-guide-img {
+    max-width: 100%;
+    height: auto;
+    border-radius: 10px;
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+    cursor: pointer;
+    transition: transform 0.3s;
+}
+
+.size-guide-img:hover {
+    transform: scale(1.02);
+}
+
 /* ===========================================
    ANTEPRIMA DAVANTI/DIETRO
    =========================================== */
