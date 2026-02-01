@@ -79,7 +79,7 @@ const PRODOTTI = {
       nome: 'Felpa Grigia con Scritta Nera',
       colore: 'grigia',
       scritta: 'nera',
-      prezzo: 26.00,
+      prezzo: 25.00,
       immagine: '/images/felpa-bianca-nera.png',
       taglie: ['S', 'M', 'L', 'XL', 'XXL']
     },
