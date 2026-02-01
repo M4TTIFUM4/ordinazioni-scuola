@@ -75,12 +75,12 @@ const PRODOTTI = {
       taglie: ['S', 'M', 'L', 'XL', 'XXL']
     },
     {
-      id: 'felpa-bianca-nera',
+      id: 'felpa-grigia-nera',
       nome: 'Felpa Grigia con Scritta Nera',
       colore: 'grigia',
       scritta: 'nera',
-      prezzo: 25.00,
-      immagine: '/images/felpa-bianca-nera.png',
+      prezzo: 26.00,
+      immagine: '/images/felpa-grigia-nera.png',
       taglie: ['S', 'M', 'L', 'XL', 'XXL']
     },
     {
@@ -100,6 +100,24 @@ const PRODOTTI = {
       prezzo: 26.00,
       immagine: '/images/felpa-nera-bianca.png',
       taglie: ['S', 'M', 'L', 'XL', 'XXL']
+    },
+    {
+      id: 'felpa-nera',
+      nome: 'Felpa Nera',
+      colore: 'nera',
+      scritta: '',
+      prezzo: 26.00,
+      immagine: '/images/felpa-nera.png',
+      taglie: ['S', 'M', 'L', 'XL', 'XXL']
+    },
+    {
+      id: 'felpa-bianca',
+      nome: 'Felpa Bianca',
+      colore: 'bianca',
+      scritta: '',
+      prezzo: 26.00,
+      immagine: '/images/felpa-bianca.png',
+      taglie: ['S', 'M', 'L', 'XL', 'XXL']
     }
   ],
   magliette: [
@@ -116,7 +134,7 @@ const PRODOTTI = {
       nome: 'Maglietta Informatica',
       indirizzo: 'Informatica',
       prezzo: 15.00,
-      immagine: '/images/maglietta-informatico.png',
+      immagine: '/images/maglietta-informatica.png',
       taglie: ['S', 'M', 'L', 'XL', 'XXL']
     },
     {
@@ -134,6 +152,22 @@ const PRODOTTI = {
       prezzo: 15.00,
       immagine: '/images/maglietta-chimico.png',
       taglie: ['S', 'M', 'L', 'XL', 'XXL']
+    },
+    {
+      id: 'maglietta-bianca',
+      nome: 'Maglietta Bianca',
+      indirizzo: '',
+      prezzo: 15.00,
+      immagine: '/images/maglietta-bianca.png',
+      taglie: ['S', 'M', 'L', 'XL', 'XXL']
+    },
+    {
+      id: 'maglietta-nera',
+      nome: 'Maglietta Nera',
+      indirizzo: '',
+      prezzo: 15.00,
+      immagine: '/images/maglietta-nera.png',
+      taglie: ['S', 'M', 'L', 'XL', 'XXL']
     }
   ],
   accessori: [
@@ -141,7 +175,7 @@ const PRODOTTI = {
       id: 'borraccia',
       nome: 'Borraccia Scuola',
       descrizione: 'Borraccia termica personalizzata',
-      prezzo: 10.00,
+      prezzo: 12.00,
       immagine: '/images/borraccia.png',
       taglie: ['Unica']
     },
@@ -149,7 +183,7 @@ const PRODOTTI = {
       id: 'cavatappi',
       nome: 'Cavatappi Scuola',
       descrizione: 'Cavatappi personalizzato',
-      prezzo: 5.00,
+      prezzo: 8.00,
       immagine: '/images/cavatappi.png',
       taglie: ['Unica']
     },
@@ -157,7 +191,7 @@ const PRODOTTI = {
       id: 'accendino',
       nome: 'Accendino Scuola',
       descrizione: 'Accendino personalizzato',
-      prezzo: 5.00,
+      prezzo: 10.00,
       video: '/images/accendino.mp4',
       immagine: '/images/accendino-thumb.png',
       taglie: ['Unica'],

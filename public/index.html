@@ -180,11 +180,22 @@
             const card = document.createElement('div');
             card.className = 'product-card';
             
-            const descrizione = tipo === 'felpa' 
-                ? `Colore ${prodotto.colore} con scritta ${prodotto.scritta}`
-                : tipo === 'maglietta'
-                ? `Indirizzo ${prodotto.indirizzo}`
-                : prodotto.descrizione;
+            let descrizione = '';
+            if (tipo === 'felpa') {
+                if (prodotto.scritta) {
+                    descrizione = `Colore ${prodotto.colore} con scritta ${prodotto.scritta}`;
+                } else {
+                    descrizione = `Colore ${prodotto.colore}`;
+                }
+            } else if (tipo === 'maglietta') {
+                if (prodotto.indirizzo) {
+                    descrizione = `Indirizzo ${prodotto.indirizzo}`;
+                } else {
+                    descrizione = `Colore ${prodotto.colore || 'base'}`;
+                }
+            } else {
+                descrizione = prodotto.descrizione;
+            }
             
             // Gestione video o immagine
             let mediaHTML = '';
@@ -208,7 +219,7 @@
                     <p class="product-description">${descrizione}</p>
                     <div class="product-footer">
                         <span class="product-price">€${prodotto.prezzo.toFixed(2)}</span>
-                        <button class="btn-order" onclick='openModal(${JSON.stringify(prodotto)})'>
+                        <button class="btn-order" onclick="openModalById('${prodotto.id}')">
                             Ordina
                         </button>
                     </div>
@@ -216,6 +227,22 @@
             `;
             
             return card;
+        }
+
+        function openModalById(prodottoId) {
+            console.log('🔍 openModalById chiamato con ID:', prodottoId);
+            console.log('📦 Prodotti disponibili:', Object.keys(catalogoProdotti));
+            
+            const prodotto = catalogoProdotti[prodottoId];
+            
+            if (!prodotto) {
+                console.error('❌ Prodotto non trovato:', prodottoId);
+                alert('Errore: Prodotto non trovato. Ricarica la pagina.');
+                return;
+            }
+            
+            console.log('✅ Prodotto trovato:', prodotto);
+            openModal(prodotto);
         }
 
         function openModal(prodotto) {
