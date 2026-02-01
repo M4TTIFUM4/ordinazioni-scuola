@@ -41,27 +41,15 @@
                 <!-- Guida Felpe -->
                 <div class="size-guide-section">
                     <h3>👕 Felpe</h3>
-                    <img src="/images/guida-taglie.png" alt="Guida Taglie Felpe" class="size-guide-img" onclick="openLightbox('/images/guida-taglie.png', 'Guida Taglie Felpe', false)" onerror="this.src='https://via.placeholder.com/800x600/667eea/ffffff?text=Guida+Taglie+Felpe'">
+                    <img src="/images/guida-taglie.png" alt="Guida Taglie Felpe" class="size-guide-img" onclick="openLightbox('/images/guida-taglie.png', 'Guida Taglie Felpe', false)">
                 </div>
                 
                 <!-- Guida Magliette -->
                 <div class="size-guide-section">
                     <h3>👚 Magliette</h3>
-                    <img src="/images/taglie-magliette.png" alt="Guida Taglie Magliette" class="size-guide-img" onclick="openLightbox('/images/taglie-magliette.png', 'Guida Taglie Magliette', false)" onerror="this.src='https://via.placeholder.com/800x600/764ba2/ffffff?text=Guida+Taglie+Magliette'">
+                    <img src="/images/taglie-magliette.png" alt="Guida Taglie Magliette" class="size-guide-img" onclick="openLightbox('/images/taglie-magliette.png', 'Guida Taglie Magliette', false)">
                 </div>
             </div>
-        </div>
-
-        <!-- Lightbox per Immagini/Video a Schermo Intero -->
-        <div id="lightbox" class="lightbox hidden" onclick="closeLightbox()">
-            <span class="lightbox-close">&times;</span>
-            <div class="lightbox-content" onclick="event.stopPropagation()">
-                <img id="lightboxImage" class="lightbox-media" style="display: none;">
-                <video id="lightboxVideo" class="lightbox-media" controls style="display: none;">
-                    <source id="lightboxVideoSource" type="video/mp4">
-                </video>
-            </div>
-            <div class="lightbox-caption" id="lightboxCaption"></div>
         </div>
 
         <!-- Modal Ordine -->
@@ -70,13 +58,6 @@
                 <span class="close" onclick="closeModal()">&times;</span>
                 
                 <div id="modalProduct" class="modal-product"></div>
-                
-                <!-- Anteprima Davanti/Dietro per Magliette -->
-                <div id="previewToggle" class="preview-toggle hidden">
-                    <button class="btn-preview active" onclick="showPreview('fronte')">Davanti</button>
-                    <button class="btn-preview" onclick="showPreview('retro')">Dietro</button>
-                    <img id="previewImage" src="" alt="Anteprima" style="width: 100%; max-width: 300px; margin: 20px auto; display: block; border-radius: 10px;">
-                </div>
                 
                 <form id="orderForm">
                     <h3>Completa il tuo ordine</h3>
@@ -120,6 +101,18 @@
             </div>
         </div>
 
+        <!-- Lightbox -->
+        <div id="lightbox" class="lightbox hidden" onclick="closeLightbox()">
+            <span class="lightbox-close">&times;</span>
+            <div class="lightbox-content" onclick="event.stopPropagation()">
+                <img id="lightboxImage" class="lightbox-media" style="display: none;">
+                <video id="lightboxVideo" class="lightbox-media" controls style="display: none;">
+                    <source id="lightboxVideoSource" type="video/mp4">
+                </video>
+            </div>
+            <div class="lightbox-caption" id="lightboxCaption"></div>
+        </div>
+
         <footer>
             <p>Sistema gestito dal Rappresentante di Istituto</p>
             <a href="admin.html" class="admin-link">Area Amministratore</a>
@@ -134,24 +127,28 @@
         window.addEventListener('DOMContentLoaded', loadCatalogo);
 
         async function loadCatalogo() {
+            console.log('📦 Caricamento catalogo...');
             try {
                 const response = await fetch('/api/catalogo');
                 catalogo = await response.json();
                 
+                console.log('✅ Catalogo ricevuto');
+                
                 renderFelpe(catalogo.felpe);
                 renderMagliette(catalogo.magliette);
                 renderAccessori(catalogo.accessori);
+                
+                console.log('✅ Rendering completato');
             } catch (error) {
-                console.error('Errore caricamento catalogo:', error);
+                console.error('❌ Errore caricamento catalogo:', error);
             }
         }
 
         function renderFelpe(felpe) {
             const grid = document.getElementById('felpe-grid');
             grid.innerHTML = '';
-            
             felpe.forEach(felpa => {
-                const card = createProductCard(felpa, 'felpa');
+                const card = createProductCard(felpa);
                 grid.appendChild(card);
             });
         }
@@ -159,9 +156,8 @@
         function renderMagliette(magliette) {
             const grid = document.getElementById('magliette-grid');
             grid.innerHTML = '';
-            
             magliette.forEach(maglietta => {
-                const card = createProductCard(maglietta, 'maglietta');
+                const card = createProductCard(maglietta);
                 grid.appendChild(card);
             });
         }
@@ -169,154 +165,78 @@
         function renderAccessori(accessori) {
             const grid = document.getElementById('accessori-grid');
             grid.innerHTML = '';
-            
             accessori.forEach(accessorio => {
-                const card = createProductCard(accessorio, 'accessorio');
+                const card = createProductCard(accessorio);
                 grid.appendChild(card);
             });
         }
 
-        function createProductCard(prodotto, tipo) {
+        function createProductCard(prodotto) {
             const card = document.createElement('div');
             card.className = 'product-card';
             
             let descrizione = '';
-            if (tipo === 'felpa') {
-                if (prodotto.scritta) {
-                    descrizione = `Colore ${prodotto.colore} con scritta ${prodotto.scritta}`;
-                } else {
-                    descrizione = `Colore ${prodotto.colore}`;
-                }
-            } else if (tipo === 'maglietta') {
-                if (prodotto.indirizzo) {
-                    descrizione = `Indirizzo ${prodotto.indirizzo}`;
-                } else {
-                    descrizione = `Colore ${prodotto.colore || 'base'}`;
-                }
+            if (prodotto.scritta) {
+                descrizione = `Colore ${prodotto.colore} con scritta ${prodotto.scritta}`;
+            } else if (prodotto.indirizzo) {
+                descrizione = `Indirizzo ${prodotto.indirizzo}`;
+            } else if (prodotto.colore) {
+                descrizione = `Colore ${prodotto.colore}`;
             } else {
-                descrizione = prodotto.descrizione;
-            }
-            
-            // Gestione video o immagine
-            let mediaHTML = '';
-            if (prodotto.hasVideo) {
-                mediaHTML = `
-                    <video autoplay loop muted playsinline onclick="openLightbox('${prodotto.video}', '${prodotto.nome}', true)" style="cursor: pointer;">
-                        <source src="${prodotto.video}" type="video/mp4">
-                        <img src="${prodotto.immagine}" alt="${prodotto.nome}">
-                    </video>
-                `;
-            } else {
-                mediaHTML = `<img src="${prodotto.immagine}" alt="${prodotto.nome}" onclick="openLightbox('${prodotto.immagine}', '${prodotto.nome}', false)" style="cursor: pointer;" onerror="this.src='https://via.placeholder.com/500x500/667eea/ffffff?text=Prodotto'">`;
+                descrizione = prodotto.descrizione || '';
             }
             
             card.innerHTML = `
                 <div class="product-image">
-                    ${mediaHTML}
+                    <img src="${prodotto.immagine}" alt="${prodotto.nome}" onclick="openLightbox('${prodotto.immagine}', '${prodotto.nome}', false)" style="cursor: pointer;">
                 </div>
                 <div class="product-info">
                     <h3 class="product-name">${prodotto.nome}</h3>
                     <p class="product-description">${descrizione}</p>
                     <div class="product-footer">
                         <span class="product-price">€${prodotto.prezzo.toFixed(2)}</span>
-                        <button class="btn-order" onclick="openModalById('${prodotto.id}')">
-                            Ordina
-                        </button>
+                        <button class="btn-order">Ordina</button>
                     </div>
                 </div>
             `;
             
+            // Aggiungi evento click al pulsante
+            const btn = card.querySelector('.btn-order');
+            btn.addEventListener('click', () => openModal(prodotto));
+            
             return card;
         }
 
-        function openModalById(prodottoId) {
-            console.log('🔍 openModalById chiamato con ID:', prodottoId);
-            console.log('📦 Prodotti disponibili:', Object.keys(catalogoProdotti));
-            
-            const prodotto = catalogoProdotti[prodottoId];
-            
-            if (!prodotto) {
-                console.error('❌ Prodotto non trovato:', prodottoId);
-                alert('Errore: Prodotto non trovato. Ricarica la pagina.');
-                return;
-            }
-            
-            console.log('✅ Prodotto trovato:', prodotto);
-            openModal(prodotto);
-        }
-
         function openModal(prodotto) {
-            console.log('🔍 openModal chiamata con:', prodotto);
-            
+            console.log('🔍 Apertura modal per:', prodotto.nome);
             prodottoSelezionato = prodotto;
             
-            try {
-                // Mostra dettaglio prodotto con video o immagine
-                const modalProduct = document.getElementById('modalProduct');
-                
-                let mediaHTML = '';
-                if (prodotto.hasVideo) {
-                    mediaHTML = `
-                        <video autoplay loop muted playsinline controls onclick="openLightbox('${prodotto.video}', '${prodotto.nome}', true)" style="width: 120px; height: 120px; object-fit: cover; border-radius: 10px; cursor: pointer;">
-                            <source src="${prodotto.video}" type="video/mp4">
-                        </video>
-                    `;
-                } else {
-                    mediaHTML = `<img src="${prodotto.immagine}" alt="${prodotto.nome}" onclick="openLightbox('${prodotto.immagine}', '${prodotto.nome}', false)" style="cursor: pointer;" onerror="this.src='https://via.placeholder.com/500x500/667eea/ffffff?text=Prodotto'">`;
-                }
-                
-                modalProduct.innerHTML = `
-                    ${mediaHTML}
-                    <div>
-                        <h2>${prodotto.nome}</h2>
-                        <p class="modal-price">€${prodotto.prezzo.toFixed(2)}</p>
-                    </div>
-                `;
-                
-                console.log('✅ Modal product HTML creato');
-                
-                // Mostra anteprima davanti/dietro per magliette
-                const previewToggle = document.getElementById('previewToggle');
-                const previewImage = document.getElementById('previewImage');
-                
-                if (prodotto.id && prodotto.id.startsWith('maglietta-')) {
-                    previewToggle.classList.remove('hidden');
-                    previewImage.src = '/images/davanti.png';
-                    // Reset pulsanti
-                    document.querySelectorAll('.btn-preview').forEach(btn => btn.classList.remove('active'));
-                    const firstBtn = document.querySelector('.btn-preview');
-                    if (firstBtn) firstBtn.classList.add('active');
-                } else {
-                    previewToggle.classList.add('hidden');
-                }
-                
-                console.log('✅ Preview toggle configurato');
-                
-                // Popola taglie
-                const tagliaSelect = document.getElementById('taglia');
-                tagliaSelect.innerHTML = '<option value="">Seleziona taglia...</option>';
-                prodotto.taglie.forEach(taglia => {
-                    const option = document.createElement('option');
-                    option.value = taglia;
-                    option.textContent = taglia;
-                    tagliaSelect.appendChild(option);
-                });
-                
-                console.log('✅ Taglie popolate:', prodotto.taglie);
-                
-                // Mostra prezzo
-                document.getElementById('totalPrice').textContent = `€${prodotto.prezzo.toFixed(2)}`;
-                
-                // Mostra modal
-                const modal = document.getElementById('orderModal');
-                modal.classList.remove('hidden');
-                
-                console.log('✅ Modal mostrato');
-                
-            } catch (error) {
-                console.error('❌ ERRORE in openModal:', error);
-                alert('Errore nell\'apertura del modal: ' + error.message);
-            }
+            const modalProduct = document.getElementById('modalProduct');
+            modalProduct.innerHTML = `
+                <img src="${prodotto.immagine}" alt="${prodotto.nome}" style="cursor: pointer;" onclick="openLightbox('${prodotto.immagine}', '${prodotto.nome}', false)">
+                <div>
+                    <h2>${prodotto.nome}</h2>
+                    <p class="modal-price">€${prodotto.prezzo.toFixed(2)}</p>
+                </div>
+            `;
+            
+            // Popola taglie
+            const tagliaSelect = document.getElementById('taglia');
+            tagliaSelect.innerHTML = '<option value="">Seleziona taglia...</option>';
+            prodotto.taglie.forEach(taglia => {
+                const option = document.createElement('option');
+                option.value = taglia;
+                option.textContent = taglia;
+                tagliaSelect.appendChild(option);
+            });
+            
+            // Mostra prezzo
+            document.getElementById('totalPrice').textContent = `€${prodotto.prezzo.toFixed(2)}`;
+            
+            // Mostra modal
+            document.getElementById('orderModal').classList.remove('hidden');
+            
+            console.log('✅ Modal aperto');
         }
 
         function closeModal() {
@@ -374,7 +294,7 @@
             messageDiv.classList.remove('hidden');
         }
 
-        // Funzioni Guida Taglie
+        // Guida Taglie
         function openSizeGuide() {
             document.getElementById('sizeGuideModal').classList.remove('hidden');
         }
@@ -383,52 +303,28 @@
             document.getElementById('sizeGuideModal').classList.add('hidden');
         }
 
-        // Funzione placeholder (per compatibilità)
-        function closeWarning() {
-            // Funzione vuota - avviso rimosso
-        }
-
-        // Funzione Anteprima Davanti/Dietro
-        function showPreview(lato) {
-            const previewImage = document.getElementById('previewImage');
-            
-            if (lato === 'fronte') {
-                previewImage.src = '/images/davanti.png';
-            } else {
-                previewImage.src = prodottoSelezionato.immagine;
-            }
-            
-            // Aggiorna pulsanti attivi
-            document.querySelectorAll('.btn-preview').forEach(btn => btn.classList.remove('active'));
-            event.target.classList.add('active');
-        }
-
-        // Funzioni Lightbox (Visualizzazione a Schermo Intero)
+        // Lightbox
         function openLightbox(src, caption, isVideo) {
             const lightbox = document.getElementById('lightbox');
             const lightboxImage = document.getElementById('lightboxImage');
             const lightboxVideo = document.getElementById('lightboxVideo');
-            const lightboxVideoSource = document.getElementById('lightboxVideoSource');
             const lightboxCaption = document.getElementById('lightboxCaption');
             
-            // Nascondi entrambi
             lightboxImage.style.display = 'none';
             lightboxVideo.style.display = 'none';
             
             if (isVideo) {
-                // Mostra video
-                lightboxVideoSource.src = src;
+                document.getElementById('lightboxVideoSource').src = src;
                 lightboxVideo.load();
                 lightboxVideo.style.display = 'block';
             } else {
-                // Mostra immagine
                 lightboxImage.src = src;
                 lightboxImage.style.display = 'block';
             }
             
             lightboxCaption.textContent = caption;
             lightbox.classList.remove('hidden');
-            document.body.style.overflow = 'hidden'; // Blocca scroll
+            document.body.style.overflow = 'hidden';
         }
 
         function closeLightbox() {
@@ -436,11 +332,11 @@
             const lightboxVideo = document.getElementById('lightboxVideo');
             
             lightbox.classList.add('hidden');
-            lightboxVideo.pause(); // Ferma il video
-            document.body.style.overflow = 'auto'; // Riabilita scroll
+            lightboxVideo.pause();
+            document.body.style.overflow = 'auto';
         }
 
-        // Chiudi lightbox con ESC
+        // Chiudi modal con ESC
         document.addEventListener('keydown', function(e) {
             if (e.key === 'Escape') {
                 closeLightbox();
@@ -451,9 +347,9 @@
 
         // Chiudi modal cliccando fuori
         window.onclick = function(event) {
-            const modal = document.getElementById('orderModal');
+            const orderModal = document.getElementById('orderModal');
             const sizeModal = document.getElementById('sizeGuideModal');
-            if (event.target === modal) {
+            if (event.target === orderModal) {
                 closeModal();
             }
             if (event.target === sizeModal) {
