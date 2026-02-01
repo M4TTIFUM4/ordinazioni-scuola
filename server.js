@@ -195,7 +195,6 @@ const PRODOTTI = {
       descrizione: 'Accendino personalizzato',
       prezzo: 10.00,
       video: '/images/accendino.mp4',
-      immagine: '/images/accendino-thumb.png',
       taglie: ['Unica'],
       hasVideo: true
     }
