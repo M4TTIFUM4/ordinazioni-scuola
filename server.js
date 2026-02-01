@@ -76,11 +76,11 @@ const PRODOTTI = {
     },
     {
       id: 'felpa-grigia-nera',
-      nome: 'Felpa Grigia con Scritta Nera',
+      nome: 'Felpa Bianca con Scritta Nera',
       colore: 'grigia',
       scritta: 'nera',
       prezzo: 26.00,
-      immagine: '/images/felpa-grigia-nera.png',
+      immagine: '/images/felpa-bianca-nera.png',
       taglie: ['S', 'M', 'L', 'XL', 'XXL']
     },
     {
@@ -134,7 +134,7 @@ const PRODOTTI = {
       nome: 'Maglietta Informatica',
       indirizzo: 'Informatica',
       prezzo: 15.00,
-      immagine: '/images/maglietta-informatica.png',
+      immagine: '/images/maglietta-informatico.png',
       taglie: ['S', 'M', 'L', 'XL', 'XXL']
     },
     {
@@ -157,6 +157,7 @@ const PRODOTTI = {
       id: 'maglietta-bianca',
       nome: 'Maglietta Bianca',
       indirizzo: '',
+      colore: 'bianca',
       prezzo: 15.00,
       immagine: '/images/maglietta-bianca.png',
       taglie: ['S', 'M', 'L', 'XL', 'XXL']
@@ -165,6 +166,7 @@ const PRODOTTI = {
       id: 'maglietta-nera',
       nome: 'Maglietta Nera',
       indirizzo: '',
+      colore: 'nera',
       prezzo: 15.00,
       immagine: '/images/maglietta-nera.png',
       taglie: ['S', 'M', 'L', 'XL', 'XXL']
