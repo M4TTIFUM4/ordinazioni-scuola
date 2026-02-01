@@ -177,7 +177,7 @@ const PRODOTTI = {
       id: 'borraccia',
       nome: 'Borraccia Scuola',
       descrizione: 'Borraccia termica personalizzata',
-      prezzo: 12.00,
+      prezzo: 10.00,
       immagine: '/images/borraccia.png',
       taglie: ['Unica']
     },
@@ -185,18 +185,18 @@ const PRODOTTI = {
       id: 'cavatappi',
       nome: 'Cavatappi Scuola',
       descrizione: 'Cavatappi personalizzato',
-      prezzo: 8.00,
+      prezzo: 5.00,
       immagine: '/images/cavatappi.png',
       taglie: ['Unica']
     },
     {
-      id: 'accendino',
+    id: 'accendino',
       nome: 'Accendino Scuola',
       descrizione: 'Accendino personalizzato',
-      prezzo: 10.00,
+      prezzo: 5.00,
       video: '/images/accendino.mp4',
+      immagine: '/images/accendino-thumb.png',
       taglie: ['Unica'],
-      hasVideo: true
     }
   ]
 };
